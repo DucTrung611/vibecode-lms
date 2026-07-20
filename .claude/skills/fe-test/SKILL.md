@@ -1,4 +1,5 @@
 ---
+name: fe-test
 description: Write frontend tests for an existing feature (hooks, utils, key component interactions)
 argument-hint: [feature-name]
 ---

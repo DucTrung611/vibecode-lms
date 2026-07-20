@@ -1,4 +1,5 @@
 ---
+name: init-base
 description: Scaffold Phase 0 base architecture for backend or frontend (folders, config, wiring) — no feature code
 argument-hint: [backend|frontend]
 ---

@@ -1,4 +1,5 @@
 ---
+name: be-feature
 description: Generate a complete backend feature module (controller, service, repository, dto, entities, tests) per BE-ARCHITECTURE.md/BE-PROJECT-RULES.md
 argument-hint: [feature-name]
 ---

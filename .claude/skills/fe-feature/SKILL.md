@@ -1,4 +1,5 @@
 ---
+name: fe-feature
 description: Generate a complete frontend feature folder (components, hooks, services, store, barrel) per FE-ARCHITECTURE.md/FE-PROJECT-RULES.md
 argument-hint: [feature-name]
 ---

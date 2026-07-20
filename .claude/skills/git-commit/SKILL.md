@@ -1,4 +1,5 @@
 ---
+name: git-commit
 description: Commit staged/unstaged changes following this repo's Conventional Commits convention, then push to GitHub after confirmation
 argument-hint: [optional message override]
 ---

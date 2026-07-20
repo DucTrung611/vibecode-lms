@@ -1,4 +1,5 @@
 ---
+name: be-test
 description: Write backend unit/integration tests for an existing feature
 argument-hint: [feature-name]
 ---

@@ -1,4 +1,5 @@
 ---
+name: db-migrate
 description: Create a Prisma migration for a schema change, following DATABASE.md conventions
 argument-hint: <verb>_<description>, e.g. add_learning_paths
 ---
