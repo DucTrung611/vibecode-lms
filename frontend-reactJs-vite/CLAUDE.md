@@ -4,13 +4,16 @@
 - Language: TypeScript
 - Framework: React 19 + Vite
 - React Compiler: enabled (babel plugin in `vite.config.ts`) — avoid manual `useMemo`/`useCallback`, let the compiler handle memoization
-- Router / state / UI library: none installed yet
+- State management: Zustand (client state) + React Query (server state/cache)
+- Styling: TailwindCSS
+- Routing: React Router
+- HTTP client: Axios (wrapped in per-feature service files)
 
 ## Documentation
 
 ### Must Read
-- @docs/FE-PROJECT-RULES.md - Conventions, patterns, MUST/MUST NOT (not created yet — ask before assuming rules)
-- @docs/FE-ARCHITECTURE.md - Folder structure, layers, feature anatomy (not created yet — ask before assuming rules)
+- @docs/FE-PROJECT-RULES.md - Conventions, patterns, MUST/MUST NOT
+- @docs/FE-ARCHITECTURE.md - Folder structure, layers, feature anatomy
 
 ### Reference
 - @../share-docs/API_SPEC.md - API contract (endpoints, auth flow, response envelope, error codes to consume)

@@ -1,6 +1,6 @@
 # ARCHITECTURE.md — Frontend (Feature-based)
 
-Stack: **React 18 + TypeScript (Vite), React Router, Zustand + React Query, TailwindCSS, Axios**. Consumes the backend defined in `API_SPEC.md`; coding rules in `PROJECT-RULES.md` (FE).
+Stack: **React 19 + TypeScript (Vite), React Router, Zustand + React Query, TailwindCSS, Axios**. Consumes the backend defined in `API_SPEC.md`; coding rules in `PROJECT-RULES.md` (FE).
 
 ## 1. Overview
 
