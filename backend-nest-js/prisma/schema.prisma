@@ -1,0 +1,537 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ---------- Enums ----------
+
+enum UserRole {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LessonType {
+  VIDEO
+  TEXT
+  QUIZ
+  ASSIGNMENT
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum LessonProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TEXT
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+// ---------- Identity ----------
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  fullName  String     @map("full_name")
+  avatarUrl String?    @map("avatar_url")
+  role      UserRole
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  deletedAt DateTime?  @map("deleted_at")
+
+  refreshTokens           RefreshToken[]
+  coursesInstructed       Course[]                 @relation("CourseInstructor")
+  enrollments             Enrollment[]
+  quizAttempts            QuizAttempt[]
+  assignmentSubmissions   AssignmentSubmission[]   @relation("SubmissionStudent")
+  gradedSubmissions       AssignmentSubmission[]   @relation("SubmissionGrader")
+  certificates            Certificate[]
+  createdLearningPaths    LearningPath[]
+  learningPathEnrollments LearningPathEnrollment[]
+  reviews                 Review[]
+  notifications           Notification[]
+  chatSessions            ChatSession[]
+  orders                  Order[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ---------- Courses ----------
+
+model Category {
+  id       String  @id @default(cuid())
+  name     String
+  slug     String  @unique
+  parentId String? @map("parent_id")
+
+  parent   Category?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryParent")
+  courses  Course[]
+
+  @@map("categories")
+}
+
+model Course {
+  id           String       @id @default(cuid())
+  title        String
+  slug         String       @unique
+  description  String       @db.Text
+  thumbnailUrl String?      @map("thumbnail_url")
+  price        Decimal      @db.Decimal(10, 2)
+  level        CourseLevel
+  status       CourseStatus @default(DRAFT)
+  instructorId String       @map("instructor_id")
+  categoryId   String?      @map("category_id")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  deletedAt    DateTime?    @map("deleted_at")
+
+  instructor        User               @relation("CourseInstructor", fields: [instructorId], references: [id])
+  category          Category?          @relation(fields: [categoryId], references: [id])
+  modules           Module[]
+  enrollments       Enrollment[]
+  certificates      Certificate[]
+  reviews           Review[]
+  documentChunks    DocumentChunk[]
+  chatSessions      ChatSession[]
+  orderItems        OrderItem[]
+  learningPathItems LearningPathItem[]
+
+  @@index([instructorId])
+  @@index([categoryId])
+  @@map("courses")
+}
+
+model Module {
+  id       String @id @default(cuid())
+  courseId String @map("course_id")
+  title    String
+  order    Int
+
+  course  Course   @relation(fields: [courseId], references: [id])
+  lessons Lesson[]
+
+  @@index([courseId])
+  @@map("modules")
+}
+
+model Lesson {
+  id          String     @id @default(cuid())
+  moduleId    String     @map("module_id")
+  title       String
+  type        LessonType
+  videoUrl    String?    @map("video_url")
+  content     String?    @db.Text
+  durationSec Int?       @map("duration_sec")
+  order       Int
+
+  module         Module           @relation(fields: [moduleId], references: [id])
+  resources      Resource[]
+  lessonProgress LessonProgress[]
+  quizzes        Quiz[]
+  assignments    Assignment[]
+  documentChunks DocumentChunk[]
+
+  @@index([moduleId])
+  @@map("lessons")
+}
+
+model Resource {
+  id       String @id @default(cuid())
+  lessonId String @map("lesson_id")
+  fileUrl  String @map("file_url")
+  fileName String @map("file_name")
+  fileType String @map("file_type")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+
+  @@index([lessonId])
+  @@map("resources")
+}
+
+// ---------- Enrollment ----------
+
+model Enrollment {
+  id          String           @id @default(cuid())
+  studentId   String           @map("student_id")
+  courseId    String           @map("course_id")
+  status      EnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime         @default(now()) @map("enrolled_at")
+  completedAt DateTime?        @map("completed_at")
+
+  student        User             @relation(fields: [studentId], references: [id])
+  course         Course           @relation(fields: [courseId], references: [id])
+  lessonProgress LessonProgress[]
+
+  @@unique([studentId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id             String               @id @default(cuid())
+  enrollmentId   String               @map("enrollment_id")
+  lessonId       String               @map("lesson_id")
+  status         LessonProgressStatus @default(NOT_STARTED)
+  watchedSeconds Int                  @default(0) @map("watched_seconds")
+  completedAt    DateTime?            @map("completed_at")
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id])
+  lesson     Lesson     @relation(fields: [lessonId], references: [id])
+
+  @@unique([enrollmentId, lessonId])
+  @@map("lesson_progress")
+}
+
+// ---------- Quizzes ----------
+
+model Quiz {
+  id            String  @id @default(cuid())
+  lessonId      String? @map("lesson_id")
+  title         String
+  isAiGenerated Boolean @default(false) @map("is_ai_generated")
+  passScore     Int     @map("pass_score")
+  timeLimitSec  Int?    @map("time_limit_sec")
+
+  lesson    Lesson?       @relation(fields: [lessonId], references: [id])
+  questions Question[]
+  attempts  QuizAttempt[]
+
+  @@index([lessonId])
+  @@map("quizzes")
+}
+
+model Question {
+  id      String       @id @default(cuid())
+  quizId  String       @map("quiz_id")
+  type    QuestionType
+  content String       @db.Text
+  points  Int
+  order   Int
+
+  quiz    Quiz             @relation(fields: [quizId], references: [id])
+  options QuestionOption[]
+  answers QuizAnswer[]
+
+  @@index([quizId])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String  @id @default(cuid())
+  questionId String  @map("question_id")
+  content    String
+  isCorrect  Boolean @default(false) @map("is_correct")
+
+  question          Question     @relation(fields: [questionId], references: [id])
+  selectedInAnswers QuizAnswer[] @relation("SelectedOption")
+
+  @@index([questionId])
+  @@map("question_options")
+}
+
+model QuizAttempt {
+  id          String    @id @default(cuid())
+  quizId      String    @map("quiz_id")
+  studentId   String    @map("student_id")
+  score       Int?
+  startedAt   DateTime  @default(now()) @map("started_at")
+  submittedAt DateTime? @map("submitted_at")
+
+  quiz    Quiz         @relation(fields: [quizId], references: [id])
+  student User         @relation(fields: [studentId], references: [id])
+  answers QuizAnswer[]
+
+  @@index([quizId])
+  @@index([studentId])
+  @@map("quiz_attempts")
+}
+
+model QuizAnswer {
+  id               String  @id @default(cuid())
+  attemptId        String  @map("attempt_id")
+  questionId       String  @map("question_id")
+  selectedOptionId String? @map("selected_option_id")
+  answerText       String? @map("answer_text") @db.Text
+  isCorrect        Boolean @default(false) @map("is_correct")
+
+  attempt        QuizAttempt     @relation(fields: [attemptId], references: [id])
+  question       Question        @relation(fields: [questionId], references: [id])
+  selectedOption QuestionOption? @relation("SelectedOption", fields: [selectedOptionId], references: [id])
+
+  @@index([attemptId])
+  @@index([questionId])
+  @@map("quiz_answers")
+}
+
+// ---------- Assignments ----------
+
+model Assignment {
+  id          String    @id @default(cuid())
+  lessonId    String    @map("lesson_id")
+  title       String
+  description String    @db.Text
+  dueDate     DateTime? @map("due_date")
+  maxScore    Int       @map("max_score")
+
+  lesson      Lesson                 @relation(fields: [lessonId], references: [id])
+  submissions AssignmentSubmission[]
+
+  @@index([lessonId])
+  @@map("assignments")
+}
+
+model AssignmentSubmission {
+  id           String    @id @default(cuid())
+  assignmentId String    @map("assignment_id")
+  studentId    String    @map("student_id")
+  fileUrl      String?   @map("file_url")
+  content      String?   @db.Text
+  submittedAt  DateTime  @default(now()) @map("submitted_at")
+  score        Int?
+  feedback     String?   @db.Text
+  gradedById   String?   @map("graded_by_id")
+  gradedAt     DateTime? @map("graded_at")
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id])
+  student    User       @relation("SubmissionStudent", fields: [studentId], references: [id])
+  gradedBy   User?      @relation("SubmissionGrader", fields: [gradedById], references: [id])
+
+  @@unique([assignmentId, studentId])
+  @@index([studentId])
+  @@map("assignment_submissions")
+}
+
+// ---------- Certificates ----------
+
+model Certificate {
+  id              String   @id @default(cuid())
+  studentId       String   @map("student_id")
+  courseId        String   @map("course_id")
+  certificateCode String   @unique @map("certificate_code")
+  certificateUrl  String   @map("certificate_url")
+  issuedAt        DateTime @default(now()) @map("issued_at")
+
+  student User   @relation(fields: [studentId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id])
+
+  @@unique([studentId, courseId])
+  @@map("certificates")
+}
+
+// ---------- Learning Paths ----------
+
+model LearningPath {
+  id            String  @id @default(cuid())
+  title         String
+  description   String? @db.Text
+  createdById   String? @map("created_by_id")
+  isAiGenerated Boolean @default(false) @map("is_ai_generated")
+
+  createdBy   User?                    @relation(fields: [createdById], references: [id])
+  items       LearningPathItem[]
+  enrollments LearningPathEnrollment[]
+
+  @@map("learning_paths")
+}
+
+model LearningPathItem {
+  id             String @id @default(cuid())
+  learningPathId String @map("learning_path_id")
+  courseId       String @map("course_id")
+  order          Int
+
+  learningPath LearningPath @relation(fields: [learningPathId], references: [id])
+  course       Course       @relation(fields: [courseId], references: [id])
+
+  @@unique([learningPathId, courseId])
+  @@map("learning_path_items")
+}
+
+model LearningPathEnrollment {
+  id              String    @id @default(cuid())
+  studentId       String    @map("student_id")
+  learningPathId  String    @map("learning_path_id")
+  progressPercent Int       @default(0) @map("progress_percent")
+  startedAt       DateTime  @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+
+  student      User         @relation(fields: [studentId], references: [id])
+  learningPath LearningPath @relation(fields: [learningPathId], references: [id])
+
+  @@unique([studentId, learningPathId])
+  @@map("learning_path_enrollments")
+}
+
+// ---------- Reviews ----------
+
+model Review {
+  id        String   @id @default(cuid())
+  courseId  String   @map("course_id")
+  studentId String   @map("student_id")
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  course  Course @relation(fields: [courseId], references: [id])
+  student User   @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, courseId])
+  @@index([courseId])
+  @@map("reviews")
+}
+
+// ---------- Notifications ----------
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  type      String
+  title     String
+  content   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+// ---------- AI Chatbot (RAG) ----------
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  studentId String   @map("student_id")
+  courseId  String?  @map("course_id")
+  title     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  student  User          @relation(fields: [studentId], references: [id])
+  course   Course?       @relation(fields: [courseId], references: [id])
+  messages ChatMessage[]
+
+  @@index([studentId])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  sessionId  String   @map("session_id")
+  role       ChatRole
+  content    String   @db.Text
+  tokensUsed Int?     @map("tokens_used")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  session ChatSession @relation(fields: [sessionId], references: [id])
+
+  @@index([sessionId])
+  @@map("chat_messages")
+}
+
+/// MVP fallback: embedding stored as JSON. Production should use a
+/// dedicated vector store (pgvector/Qdrant/Pinecone), joined by id.
+model DocumentChunk {
+  id         String  @id @default(cuid())
+  courseId   String  @map("course_id")
+  lessonId   String? @map("lesson_id")
+  content    String  @db.Text
+  embedding  Json?
+  metadata   Json?
+  chunkIndex Int     @map("chunk_index")
+
+  course Course  @relation(fields: [courseId], references: [id])
+  lesson Lesson? @relation(fields: [lessonId], references: [id])
+
+  @@index([courseId])
+  @@map("document_chunks")
+}
+
+// ---------- Payments ----------
+
+model Order {
+  id          String      @id @default(cuid())
+  studentId   String      @map("student_id")
+  totalAmount Decimal     @map("total_amount") @db.Decimal(10, 2)
+  status      OrderStatus @default(PENDING)
+  paidAt      DateTime?   @map("paid_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  student User        @relation(fields: [studentId], references: [id])
+  items   OrderItem[]
+
+  @@index([studentId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id       String  @id @default(cuid())
+  orderId  String  @map("order_id")
+  courseId String  @map("course_id")
+  price    Decimal @db.Decimal(10, 2)
+
+  order  Order  @relation(fields: [orderId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
