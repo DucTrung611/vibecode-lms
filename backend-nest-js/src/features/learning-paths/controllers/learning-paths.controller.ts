@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -12,6 +13,7 @@ import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
 import { Roles } from '../../../shared/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
+import { GenerateLearningPathDto } from '../dto/generate-learning-path.dto';
 import { QueryLearningPathsDto } from '../dto/query-learning-paths.dto';
 import { LearningPathsService } from '../services/learning-paths.service';
 
@@ -22,6 +24,16 @@ export class LearningPathsController {
   @Get()
   findAll(@Query() query: QueryLearningPathsDto) {
     return this.learningPathsService.findAll(query.page, query.limit);
+  }
+
+  @Post('generate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('STUDENT')
+  generate(
+    @CurrentUser('id') studentId: string,
+    @Body() dto: GenerateLearningPathDto,
+  ) {
+    return this.learningPathsService.generate(studentId, dto);
   }
 
   @Post(':id/enroll')

@@ -9,6 +9,7 @@ describe('LearningPathRepository', () => {
       findMany: jest.Mock;
       count: jest.Mock;
       findUnique: jest.Mock;
+      create: jest.Mock;
     };
   };
 
@@ -23,6 +24,7 @@ describe('LearningPathRepository', () => {
         findMany: jest.fn(),
         count: jest.fn(),
         findUnique: jest.fn(),
+        create: jest.fn(),
       },
     };
     repository = new LearningPathRepository(prisma as unknown as PrismaService);
@@ -53,6 +55,36 @@ describe('LearningPathRepository', () => {
 
       expect(prisma.learningPath.findUnique).toHaveBeenCalledWith({
         where: { id: 'path_1' },
+      });
+      expect(result).toBe(fakePath);
+    });
+  });
+
+  describe('createGenerated', () => {
+    it('creates the learning path with nested items in the given order', async () => {
+      prisma.learningPath.create.mockResolvedValue(fakePath);
+
+      const result = await repository.createGenerated({
+        title: 'Frontend Foundations',
+        description: 'HTML then CSS',
+        createdById: 'student_1',
+        courseIds: ['course_1', 'course_2'],
+      });
+
+      expect(prisma.learningPath.create).toHaveBeenCalledWith({
+        data: {
+          title: 'Frontend Foundations',
+          description: 'HTML then CSS',
+          createdById: 'student_1',
+          isAiGenerated: true,
+          items: {
+            create: [
+              { courseId: 'course_1', order: 0 },
+              { courseId: 'course_2', order: 1 },
+            ],
+          },
+        },
+        include: listInclude,
       });
       expect(result).toBe(fakePath);
     });
