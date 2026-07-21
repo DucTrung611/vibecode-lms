@@ -5,6 +5,7 @@ import { coursesRoutes } from '@/features/courses';
 import { enrollmentRoutes } from '@/features/enrollment';
 import { identityRoutes } from '@/features/identity';
 import { notificationRoutes } from '@/features/notifications';
+import { paymentRoutes } from '@/features/payments';
 import { quizRoutes } from '@/features/quizzes';
 
 // Feature routes are registered here as they're scaffolded by /fe-feature.
@@ -21,4 +22,5 @@ export const router = createBrowserRouter([
   ...assignmentRoutes,
   ...certificateRoutes,
   ...notificationRoutes,
+  ...paymentRoutes,
 ]);

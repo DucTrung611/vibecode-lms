@@ -50,7 +50,7 @@ export default function CourseDetailPage() {
             Edit course
           </Link>
         ) : (
-          <EnrollButton courseId={course.id} />
+          <EnrollButton courseId={course.id} price={course.price} />
         )}
       </div>
 

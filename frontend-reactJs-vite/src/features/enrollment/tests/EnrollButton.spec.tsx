@@ -2,11 +2,15 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useBuyCourse } from '@/features/payments';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { EnrollButton } from '../components/EnrollButton';
 import { useEnroll } from '../hooks/useEnroll';
 
 vi.mock('../hooks/useEnroll');
+vi.mock('@/features/payments', () => ({
+  useBuyCourse: vi.fn(),
+}));
 
 const studentUser = {
   id: 'student_1',
@@ -18,6 +22,7 @@ const instructorUser = { ...studentUser, id: 'instr_1', role: 'INSTRUCTOR' as co
 
 describe('EnrollButton', () => {
   const mutate = vi.fn();
+  const buyMutate = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -26,6 +31,11 @@ describe('EnrollButton', () => {
       isPending: false,
       isSuccess: false,
     } as unknown as ReturnType<typeof useEnroll>);
+    vi.mocked(useBuyCourse).mockReturnValue({
+      mutate: buyMutate,
+      isPending: false,
+      isSuccess: false,
+    } as unknown as ReturnType<typeof useBuyCourse>);
   });
 
   afterEach(() => {
@@ -55,6 +65,38 @@ describe('EnrollButton', () => {
     render(<EnrollButton courseId="course_1" />, { wrapper: MemoryRouter });
 
     await user.click(screen.getByRole('button', { name: /^enroll$/i }));
+
+    expect(mutate).toHaveBeenCalledWith('course_1');
+  });
+
+  it('shows a price and buys the course instead of enrolling directly when price > 0', async () => {
+    useAuthStore.setState({ user: studentUser });
+    const user = userEvent.setup();
+    render(<EnrollButton courseId="course_1" price={49.99} />, {
+      wrapper: MemoryRouter,
+    });
+
+    const button = screen.getByRole('button', { name: 'Buy for $49.99' });
+    await user.click(button);
+
+    expect(buyMutate).toHaveBeenCalledWith(
+      'course_1',
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  it('enrolls after a successful purchase', async () => {
+    useAuthStore.setState({ user: studentUser });
+    const user = userEvent.setup();
+    render(<EnrollButton courseId="course_1" price={49.99} />, {
+      wrapper: MemoryRouter,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Buy for $49.99' }));
+
+    const onSuccess = buyMutate.mock.calls[0][1].onSuccess as () => void;
+    onSuccess();
 
     expect(mutate).toHaveBeenCalledWith('course_1');
   });
