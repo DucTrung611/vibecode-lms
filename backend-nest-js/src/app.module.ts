@@ -11,6 +11,7 @@ import { CoursesModule } from './features/courses/courses.module';
 import { EnrollmentModule } from './features/enrollment/enrollment.module';
 import { IdentityModule } from './features/identity/identity.module';
 import { NotificationsModule } from './features/notifications/notifications.module';
+import { PaymentsModule } from './features/payments/payments.module';
 import { QuizzesModule } from './features/quizzes/quizzes.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
 
@@ -32,6 +33,7 @@ import { ReviewsModule } from './features/reviews/reviews.module';
     CertificatesModule,
     ReviewsModule,
     NotificationsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

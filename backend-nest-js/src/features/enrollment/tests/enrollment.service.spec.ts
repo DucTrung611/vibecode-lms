@@ -1,6 +1,7 @@
 import { Enrollment } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CoursesService } from '../../courses/services/courses.service';
+import { PaymentsService } from '../../payments/services/payments.service';
 import { ENROLLMENT_COMPLETED_EVENT } from '../../../shared/events/enrollment-completed.event';
 import { ApiException } from '../../../shared/types/api-error-code.type';
 import { EnrollmentRepository } from '../repositories/enrollment.repository';
@@ -24,6 +25,9 @@ describe('EnrollmentService', () => {
   >;
   let coursesService: jest.Mocked<Pick<CoursesService, 'findById'>>;
   let eventEmitter: jest.Mocked<Pick<EventEmitter2, 'emit'>>;
+  let paymentsService: jest.Mocked<
+    Pick<PaymentsService, 'hasPaidOrderForCourse'>
+  >;
 
   const fakeEnrollment: Enrollment = {
     id: 'enr_1',
@@ -63,12 +67,16 @@ describe('EnrollmentService', () => {
     eventEmitter = {
       emit: jest.fn(),
     };
+    paymentsService = {
+      hasPaidOrderForCourse: jest.fn(),
+    };
 
     service = new EnrollmentService(
       enrollmentRepository as unknown as EnrollmentRepository,
       lessonProgressRepository as unknown as LessonProgressRepository,
       coursesService as unknown as CoursesService,
       eventEmitter as unknown as EventEmitter2,
+      paymentsService as unknown as PaymentsService,
     );
   });
 
@@ -96,16 +104,38 @@ describe('EnrollmentService', () => {
       expect(enrollmentRepository.create).not.toHaveBeenCalled();
     });
 
-    it('throws PAYMENT_001 (402) when the course is paid', async () => {
+    it('throws PAYMENT_001 (402) when the course is paid and no paid order exists', async () => {
       coursesService.findById.mockResolvedValue(
         courseWithLessons(49.99) as never,
       );
       enrollmentRepository.findByStudentAndCourse.mockResolvedValue(null);
+      paymentsService.hasPaidOrderForCourse.mockResolvedValue(false);
 
       await expect(
         service.enroll('student_1', 'course_1'),
       ).rejects.toMatchObject({ httpStatus: 402, code: 'PAYMENT_001' });
+      expect(paymentsService.hasPaidOrderForCourse).toHaveBeenCalledWith(
+        'student_1',
+        'course_1',
+      );
       expect(enrollmentRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('creates the enrollment for a paid course when a paid order exists', async () => {
+      coursesService.findById.mockResolvedValue(
+        courseWithLessons(49.99) as never,
+      );
+      enrollmentRepository.findByStudentAndCourse.mockResolvedValue(null);
+      paymentsService.hasPaidOrderForCourse.mockResolvedValue(true);
+      enrollmentRepository.create.mockResolvedValue(fakeEnrollment);
+
+      const result = await service.enroll('student_1', 'course_1');
+
+      expect(enrollmentRepository.create).toHaveBeenCalledWith({
+        studentId: 'student_1',
+        courseId: 'course_1',
+      });
+      expect(result.id).toBe('enr_1');
     });
 
     it('creates the enrollment for a free course', async () => {

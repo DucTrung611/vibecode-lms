@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Enrollment } from '@prisma/client';
 import { CoursesService } from '../../courses/services/courses.service';
+import { PaymentsService } from '../../payments/services/payments.service';
 import {
   ENROLLMENT_COMPLETED_EVENT,
   EnrollmentCompletedEvent,
@@ -28,6 +29,7 @@ export class EnrollmentService {
     private readonly lessonProgressRepository: LessonProgressRepository,
     private readonly coursesService: CoursesService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly paymentsService: PaymentsService,
   ) {}
 
   async enroll(studentId: string, courseId: string): Promise<EnrollmentEntity> {
@@ -46,11 +48,17 @@ export class EnrollmentService {
     }
 
     if (course.price > 0) {
-      throw new ApiException(
-        402,
-        'PAYMENT_001',
-        'Payment required for this course',
+      const hasPaid = await this.paymentsService.hasPaidOrderForCourse(
+        studentId,
+        courseId,
       );
+      if (!hasPaid) {
+        throw new ApiException(
+          402,
+          'PAYMENT_001',
+          'Payment required for this course',
+        );
+      }
     }
 
     const enrollment = await this.enrollmentRepository.create({
