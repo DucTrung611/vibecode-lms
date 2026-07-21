@@ -13,8 +13,9 @@ File/text assignment submission flow for enrolled students, plus instructor grad
 | GET | `/assignments/:id` | ✅ |
 | POST | `/assignments/:id/submissions` | ✅ |
 | PATCH | `/submissions/:id/grade` | ✅ |
+| GET | `/assignments/:id/submissions` | ✅ |
 
-All 3 endpoints implemented — nothing skipped.
+All 3 spec'd endpoints implemented, plus `GET /assignments/:id/submissions` (instructor-only submission listing) added beyond `API_SPEC.md` to close a real gap: without it, an instructor had no way to discover a submission's `id` to call `PATCH /submissions/:id/grade` at all.
 
 ## Public API (for other features to inject)
 - `AssignmentsService` — exported via `AssignmentsModule.exports`. No other feature consumes it yet; `certificates` may eventually want "all required assignments graded/passed" before issuing a certificate, but that's not in `API_SPEC.md`/`DATABASE.md` yet — not added preemptively (YAGNI, same reasoning `quizzes` used).
@@ -28,6 +29,9 @@ This feature injects `CoursesService` (from `CoursesModule`) and `EnrollmentServ
 - **Late-submission rule**: reuses the already-named `400 ASSIGNMENT_003` ("Submission after due date without late-submission policy") from `API_SPEC.md` §5. Since `DATABASE.md`'s `assignments` table has no late-policy field at all, "without late-submission policy" is unconditionally true today — any submission after `dueDate` is rejected. Revisit if a policy field is ever added to the schema.
 - **Score cannot exceed `maxScore`**: validated in the service (not the DTO — `maxScore` is per-assignment, not a static rule `class-validator` can express), throwing the new `400 ASSIGNMENT_006`.
 - **`fileUrl`/`content` — at least one required**: enforced in the service (`400 ASSIGNMENT_005`) rather than a DTO-level "at least one of" validator, matching the project's existing preference for simple per-field decorators over custom validator classes.
+- **`GET /assignments/:id/submissions` overrides the controller's class-level `@Roles('STUDENT')` with its own method-level `@Roles('INSTRUCTOR')`** — `AssignmentsController` is otherwise entirely student-facing, but Nest's `RolesGuard` reads `getAllAndOverride` (handler wins over class), so a single method-level override was simpler than splitting this route into a new controller (the way `quizzes` split `LessonQuizzesController` out for its own instructor-only generate route — that case had a different URL prefix entirely, `/lessons/*` vs `/quizzes/*`, so a new controller was unavoidable there; here the path (`/assignments/:id/submissions`) already belongs to this controller).
+- **Ownership check reuses the exact same resolve-course-then-compare-instructorId logic as `gradeSubmission`** — both need "does this instructor own the course this assignment belongs to," just entered from different sides (`submissionId → assignment` vs `assignmentId` directly).
+- **Submission list includes each row's `student: { id, fullName }`** (`AssignmentSubmissionEntity.student`, optional, populated only when the repository's include is used) — an instructor grading needs to know *whose* submission they're looking at; the single-submission paths (`create`/`grade`) don't need it since the caller already has that context.
 
 ## Error Codes
 Reuses `ASSIGNMENT_003` (400, already in `API_SPEC.md` §5, now implemented as documented) and `AUTH_003` (403, both "not enrolled" and "not the owning instructor," consistent with how `courses`/`quizzes` reuse it). Adds four new codes, following the `ASSIGNMENT_[NUMBER]` format:
@@ -43,6 +47,5 @@ Reuses `ASSIGNMENT_003` (400, already in `API_SPEC.md` §5, now implemented as d
 `share-docs/API_SPEC.md` §5 should be updated to include `ASSIGNMENT_001`, `ASSIGNMENT_002`, `ASSIGNMENT_004`, `ASSIGNMENT_005`, `ASSIGNMENT_006` the next time it's revised.
 
 ## Known Constraints / Deferred
-- No submission listing endpoint (e.g. "all submissions for this assignment" for an instructor to grade) — not in `API_SPEC.md` for this phase; an instructor currently needs a submission's `id` from elsewhere (out of scope here) to call the grade endpoint.
 - No resubmission/update-submission endpoint — see "one submission per student" above.
 - No file upload — `fileUrl` is a plain string field, same deferred-upload pattern `courses` already documented for `thumbnailUrl`/lesson `Resource`.

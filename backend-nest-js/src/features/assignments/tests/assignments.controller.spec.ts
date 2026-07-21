@@ -4,13 +4,14 @@ import { AssignmentsService } from '../services/assignments.service';
 describe('AssignmentsController', () => {
   let controller: AssignmentsController;
   let assignmentsService: jest.Mocked<
-    Pick<AssignmentsService, 'findById' | 'submit'>
+    Pick<AssignmentsService, 'findById' | 'submit' | 'findSubmissions'>
   >;
 
   beforeEach(() => {
     assignmentsService = {
       findById: jest.fn(),
       submit: jest.fn(),
+      findSubmissions: jest.fn(),
     };
     controller = new AssignmentsController(
       assignmentsService as unknown as AssignmentsService,
@@ -44,6 +45,31 @@ describe('AssignmentsController', () => {
         dto,
       );
       expect(result).toEqual({ id: 'sub_1' });
+    });
+  });
+
+  describe('findSubmissions', () => {
+    it('delegates to assignmentsService.findSubmissions with the current instructor, assignment id, and query', async () => {
+      assignmentsService.findSubmissions.mockResolvedValue({
+        items: [],
+        meta: { page: 1, limit: 20, total: 0 },
+      });
+
+      const result = await controller.findSubmissions('instructor_1', 'asg_1', {
+        page: 2,
+        limit: 5,
+      });
+
+      expect(assignmentsService.findSubmissions).toHaveBeenCalledWith(
+        'instructor_1',
+        'asg_1',
+        2,
+        5,
+      );
+      expect(result).toEqual({
+        items: [],
+        meta: { page: 1, limit: 20, total: 0 },
+      });
     });
   });
 });

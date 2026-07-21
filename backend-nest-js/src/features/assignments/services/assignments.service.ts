@@ -1,5 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiException } from '../../../shared/types/api-error-code.type';
+import { PaginatedResult } from '../../../shared/types/paginated-result.type';
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  normalizePagination,
+} from '../../../shared/utils/pagination.util';
 import { CoursesService } from '../../courses/services/courses.service';
 import { EnrollmentService } from '../../enrollment/services/enrollment.service';
 import { CreateSubmissionDto } from '../dto/create-submission.dto';
@@ -117,6 +123,38 @@ export class AssignmentsService {
       `Submission ${submissionId} graded by instructor ${graderId}`,
     );
     return AssignmentSubmissionEntity.fromPrisma(graded);
+  }
+
+  async findSubmissions(
+    instructorId: string,
+    assignmentId: string,
+    page?: number,
+    limit?: number,
+  ): Promise<PaginatedResult<AssignmentSubmissionEntity>> {
+    const assignment = await this.getAssignmentOrThrow(assignmentId);
+    const course = await this.coursesService.findById(
+      assignment.lesson.module.courseId,
+    );
+    if (course.instructorId !== instructorId) {
+      throw new ApiException(403, 'AUTH_003', 'You do not own this course');
+    }
+
+    const normalized = normalizePagination({
+      page: page ?? DEFAULT_PAGE,
+      limit: limit ?? DEFAULT_LIMIT,
+    });
+    const { items, total } = await this.submissionRepository.findByAssignment(
+      assignmentId,
+      normalized.page,
+      normalized.limit,
+    );
+
+    return {
+      items: items.map((submission) =>
+        AssignmentSubmissionEntity.fromPrisma(submission),
+      ),
+      meta: { page: normalized.page, limit: normalized.limit, total },
+    };
   }
 
   private async getAssignmentOrThrow(

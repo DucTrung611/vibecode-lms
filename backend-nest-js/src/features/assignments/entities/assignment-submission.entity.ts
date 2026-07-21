@@ -1,4 +1,4 @@
-import { AssignmentSubmission } from '@prisma/client';
+import { AssignmentSubmission, User } from '@prisma/client';
 
 export class AssignmentSubmissionEntity {
   id: string;
@@ -11,9 +11,12 @@ export class AssignmentSubmissionEntity {
   feedback: string | null;
   gradedById: string | null;
   gradedAt: Date | null;
+  student?: { id: string; fullName: string };
 
   static fromPrisma(
-    submission: AssignmentSubmission,
+    submission: AssignmentSubmission & {
+      student?: Pick<User, 'id' | 'fullName'>;
+    },
   ): AssignmentSubmissionEntity {
     const entity = new AssignmentSubmissionEntity();
     entity.id = submission.id;
@@ -26,6 +29,12 @@ export class AssignmentSubmissionEntity {
     entity.feedback = submission.feedback;
     entity.gradedById = submission.gradedById;
     entity.gradedAt = submission.gradedAt;
+    if (submission.student) {
+      entity.student = {
+        id: submission.student.id,
+        fullName: submission.student.fullName,
+      };
+    }
     return entity;
   }
 }

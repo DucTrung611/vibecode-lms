@@ -8,6 +8,8 @@ describe('AssignmentSubmissionRepository', () => {
       findUnique: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
+      findMany: jest.Mock;
+      count: jest.Mock;
     };
   };
 
@@ -19,6 +21,8 @@ describe('AssignmentSubmissionRepository', () => {
         findUnique: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        findMany: jest.fn(),
+        count: jest.fn(),
       },
     };
     repository = new AssignmentSubmissionRepository(
@@ -97,6 +101,27 @@ describe('AssignmentSubmissionRepository', () => {
         },
       });
       expect(result).toBe(fakeSubmission);
+    });
+  });
+
+  describe('findByAssignment', () => {
+    it('paginates and includes the student summary, most recent first', async () => {
+      prisma.assignmentSubmission.findMany.mockResolvedValue([fakeSubmission]);
+      prisma.assignmentSubmission.count.mockResolvedValue(1);
+
+      const result = await repository.findByAssignment('asg_1', 2, 10);
+
+      expect(prisma.assignmentSubmission.findMany).toHaveBeenCalledWith({
+        where: { assignmentId: 'asg_1' },
+        include: { student: { select: { id: true, fullName: true } } },
+        orderBy: { submittedAt: 'desc' },
+        skip: 10,
+        take: 10,
+      });
+      expect(prisma.assignmentSubmission.count).toHaveBeenCalledWith({
+        where: { assignmentId: 'asg_1' },
+      });
+      expect(result).toEqual({ items: [fakeSubmission], total: 1 });
     });
   });
 });

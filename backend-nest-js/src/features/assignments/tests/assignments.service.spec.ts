@@ -18,7 +18,11 @@ describe('AssignmentsService', () => {
   let submissionRepository: jest.Mocked<
     Pick<
       AssignmentSubmissionRepository,
-      'findById' | 'findByAssignmentAndStudent' | 'create' | 'grade'
+      | 'findById'
+      | 'findByAssignmentAndStudent'
+      | 'create'
+      | 'grade'
+      | 'findByAssignment'
     >
   >;
   let coursesService: jest.Mocked<Pick<CoursesService, 'findById'>>;
@@ -54,6 +58,7 @@ describe('AssignmentsService', () => {
       findByAssignmentAndStudent: jest.fn(),
       create: jest.fn(),
       grade: jest.fn(),
+      findByAssignment: jest.fn(),
     };
     coursesService = { findById: jest.fn() };
     enrollmentService = { isEnrolled: jest.fn() };
@@ -241,6 +246,57 @@ describe('AssignmentsService', () => {
         gradedById: 'instructor_1',
       });
       expect(result.score).toBe(90);
+    });
+  });
+
+  describe('findSubmissions', () => {
+    it('throws ASSIGNMENT_001 (404) when the assignment does not exist', async () => {
+      assignmentRepository.findByIdWithCourse.mockResolvedValue(null);
+
+      await expect(
+        service.findSubmissions('instructor_1', 'missing'),
+      ).rejects.toMatchObject({ httpStatus: 404, code: 'ASSIGNMENT_001' });
+    });
+
+    it('throws AUTH_003 (403) when the caller does not own the course', async () => {
+      assignmentRepository.findByIdWithCourse.mockResolvedValue(assignment);
+      coursesService.findById.mockResolvedValue({
+        instructorId: 'someone_else',
+      } as never);
+
+      await expect(
+        service.findSubmissions('instructor_1', 'asg_1'),
+      ).rejects.toMatchObject({ httpStatus: 403, code: 'AUTH_003' });
+      expect(submissionRepository.findByAssignment).not.toHaveBeenCalled();
+    });
+
+    it('returns the paginated, mapped submission list for the owning instructor', async () => {
+      assignmentRepository.findByIdWithCourse.mockResolvedValue(assignment);
+      coursesService.findById.mockResolvedValue({
+        instructorId: 'instructor_1',
+      } as never);
+      submissionRepository.findByAssignment.mockResolvedValue({
+        items: [
+          {
+            ...fakeSubmission,
+            student: { id: 'student_1', fullName: 'Jane Doe' },
+          },
+        ],
+        total: 1,
+      });
+
+      const result = await service.findSubmissions('instructor_1', 'asg_1');
+
+      expect(submissionRepository.findByAssignment).toHaveBeenCalledWith(
+        'asg_1',
+        1,
+        20,
+      );
+      expect(result.meta).toEqual({ page: 1, limit: 20, total: 1 });
+      expect(result.items[0].student).toEqual({
+        id: 'student_1',
+        fullName: 'Jane Doe',
+      });
     });
   });
 });
