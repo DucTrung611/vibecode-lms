@@ -46,6 +46,13 @@ export interface Course {
   modules?: CourseModule[];
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+}
+
 export interface CourseListFilters {
   page?: number;
   limit?: number;
@@ -64,6 +71,7 @@ export const courseFormSchema = z.object({
     .optional(),
   price: z.number().min(0, 'Price cannot be negative'),
   level: z.enum(COURSE_LEVELS),
+  categoryId: z.string().optional(),
 });
 export type CourseFormValues = z.infer<typeof courseFormSchema>;
 

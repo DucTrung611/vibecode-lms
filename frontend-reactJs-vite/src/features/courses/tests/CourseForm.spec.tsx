@@ -67,6 +67,7 @@ describe('CourseForm', () => {
       description: 'A course',
       price: 0,
       level: 'BEGINNER',
+      categoryId: '',
       status: 'DRAFT',
       thumbnailUrl: '',
     });

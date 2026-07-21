@@ -17,6 +17,7 @@ export function useCreateCourse() {
         price: dto.price,
         level: dto.level,
         thumbnailUrl: dto.thumbnailUrl || undefined,
+        categoryId: dto.categoryId || undefined,
       }),
     onSuccess: (course) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });

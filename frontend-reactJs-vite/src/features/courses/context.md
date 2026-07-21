@@ -13,19 +13,25 @@ Public course catalog/detail, a lesson viewer for enrolled students, plus instru
 | DELETE | `/courses/:id` | `useDeleteCourse` |
 | POST | `/courses/:id/modules` | `useAddModule` |
 | POST | `/modules/:id/lessons` | `useAddLesson` |
+| GET | `/categories` | `useCategories` |
+| POST | `/categories` | `useCreateCategory` |
 
-All 7 endpoints from `API_SPEC.md` §Courses are consumed.
+All 7 endpoints from `API_SPEC.md` §Courses are consumed, plus the backend's new (beyond-spec) category endpoints.
 
 ## Public API (via `index.ts`)
 - `coursesRoutes` — consumed by `app/routes/router.tsx`
 - `useCourse`, `useCourses` — for other features that need to read course data (e.g. `enrollment` will want `useCourse(courseId)` to show what a student is enrolling in)
 - Types: `Course`, `CourseListFilters`, `CourseModule`, `Lesson`
 
+`useCategories`/`useCreateCategory` are **not** exported — only `CourseForm` (category picker + inline create) and `CourseFilters` (category filter) use them, both within this feature.
+
 `useCreateCourse`/`useUpdateCourse`/`useDeleteCourse`/`useAddModule`/`useAddLesson` are intentionally **not** exported — they're authoring-only and specific to this feature's own instructor pages.
 
 ## Design Decisions
 - **Public catalog defaults to `status: 'PUBLISHED'`** and isn't user-togglable — there's no "my courses" endpoint in `API_SPEC.md` yet for an instructor to browse their own drafts, so that's deferred rather than half-built.
-- **No category filter/picker** — `API_SPEC.md` has no `GET /categories` endpoint, so there's no way to populate a dropdown or validate a `categoryId` client-side. Category assignment is out of scope on the frontend until that endpoint exists.
+- ~~No category filter/picker~~ **Closed**: `CourseForm` gets a category `<select>` (populated by `useCategories`) plus an inline "+ New category" toggle that swaps the select for a name input + "Add" button — creating one calls `useCreateCategory` and auto-selects the result. `CourseFilters` gets a plain category `<select>` (no create) alongside the existing level filter, wired into `CourseCatalogPage`'s query params.
+- **`useCreateCategory` writes the new category into the `['categories']` query cache directly (`setQueryData`), not just `invalidateQueries`** — found via manual browser testing: an invalidate-only refetch lands one render tick too late for `CourseForm`'s "auto-select the category I just created" flow (`setValue('categoryId', newId)` fires before the refetched list contains the matching `<option>`, so the native `<select>` silently ignores the value — no error, just a UI-only bug where the picker reverted to "No category" despite the category having been created successfully). Writing the cache synchronously guarantees the option exists in the same render as the `setValue` call.
+- **`useCategories` uses `staleTime: 5 * 60_000`** (5 minutes) — matches `FE-ARCHITECTURE.md` §7's own example of "rarely-changing data (categories)" verbatim.
 - **Ownership-gated edit UI**: `CourseDetailPage` only shows an "Edit course" link when `useAuthStore().user.id === course.instructorId`; `InstructorCourseEditPage` redirects home if the loaded course isn't owned by the current user (defense in depth — the backend enforces this regardless).
 - **`order` for modules/lessons**: omitted from the add-module/add-lesson forms entirely; the backend auto-assigns the next order when omitted (see backend `courses/context.md`), so the UI doesn't need manual ordering yet (drag-to-reorder would be a separate future task).
 - **`LessonPage` resolves the caller's `enrollmentId` by scanning `useMyEnrollments()`** for an entry matching the route's `courseId`, rather than the backend exposing a "my enrollment for course X" lookup — `PATCH /enrollments/:id/progress` needs an `enrollmentId`, not a `courseId`, and no such single-lookup endpoint exists in `API_SPEC.md`. Same tradeoff `useMyEnrollments`'s own un-paginated "always page 1" limitation already accepts: fine until a student has enough enrollments that page 1 doesn't contain the one they're viewing.

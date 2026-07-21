@@ -9,12 +9,14 @@ import type { CourseLevel } from '../types/courses.types';
 export default function CourseCatalogPage() {
   const [page, setPage] = useState(1);
   const [level, setLevel] = useState<CourseLevel | ''>('');
+  const [categoryId, setCategoryId] = useState('');
 
   const { data, isPending, isError } = useCourses({
     page,
     limit: 12,
     status: 'PUBLISHED',
     level: level || undefined,
+    categoryId: categoryId || undefined,
   });
 
   return (
@@ -25,6 +27,11 @@ export default function CourseCatalogPage() {
           level={level}
           onLevelChange={(value) => {
             setLevel(value);
+            setPage(1);
+          }}
+          categoryId={categoryId}
+          onCategoryChange={(value) => {
+            setCategoryId(value);
             setPage(1);
           }}
         />

@@ -1,7 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/shared/components/Button';
 import { FileUploadButton } from '@/shared/components/FileUploadButton';
+import { useCategories } from '../hooks/useCategories';
+import { useCreateCategory } from '../hooks/useCreateCategory';
 import {
   COURSE_LEVELS,
   COURSE_STATUSES,
@@ -37,8 +40,14 @@ export function CourseForm({
       price: defaultValues?.price ?? 0,
       level: defaultValues?.level ?? 'BEGINNER',
       status: defaultValues?.status ?? 'DRAFT',
+      categoryId: defaultValues?.categoryId ?? '',
     },
   });
+
+  const categories = useCategories();
+  const createCategory = useCreateCategory();
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   return (
     <form
@@ -114,6 +123,68 @@ export function CourseForm({
             ))}
           </select>
         </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="categoryId"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Category
+          </label>
+          <button
+            type="button"
+            onClick={() => setIsAddingCategory((prev) => !prev)}
+            className="text-xs font-medium text-purple-600 hover:underline"
+          >
+            {isAddingCategory ? 'Cancel' : '+ New category'}
+          </button>
+        </div>
+
+        {isAddingCategory ? (
+          <div className="mt-1 flex gap-2">
+            <input
+              id="categoryId"
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Category name"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={createCategory.isPending || !newCategoryName.trim()}
+              onClick={() => {
+                createCategory.mutate(newCategoryName.trim(), {
+                  onSuccess: (category) => {
+                    setValue('categoryId', category.id, {
+                      shouldValidate: true,
+                    });
+                    setNewCategoryName('');
+                    setIsAddingCategory(false);
+                  },
+                });
+              }}
+            >
+              {createCategory.isPending ? 'Adding…' : 'Add'}
+            </Button>
+          </div>
+        ) : (
+          <select
+            id="categoryId"
+            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            {...register('categoryId')}
+          >
+            <option value="">No category</option>
+            {(categories.data ?? []).map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {mode === 'edit' && (

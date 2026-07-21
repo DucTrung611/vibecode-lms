@@ -12,6 +12,7 @@ export function useUpdateCourse(courseId: string) {
       coursesService.update(courseId, {
         ...dto,
         thumbnailUrl: dto.thumbnailUrl || undefined,
+        categoryId: dto.categoryId || undefined,
       }),
     onSuccess: (course) => {
       queryClient.setQueryData(['courses', courseId], course);
