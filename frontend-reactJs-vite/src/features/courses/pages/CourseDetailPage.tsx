@@ -64,7 +64,7 @@ export default function CourseDetailPage() {
 
       <div>
         <h2 className="mb-3 text-lg font-semibold text-gray-900">Content</h2>
-        <CourseModuleList modules={course.modules ?? []} />
+        <CourseModuleList courseId={course.id} modules={course.modules ?? []} />
       </div>
 
       {currentUser?.role === 'STUDENT' ? (

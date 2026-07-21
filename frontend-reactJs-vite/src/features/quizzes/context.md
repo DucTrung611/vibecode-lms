@@ -17,7 +17,7 @@ All 3 backend endpoints implemented in `backend-nest-js/src/features/quizzes` ar
 - `useQuiz`, `useStartAttempt`, `useSubmitAttempt`
 - Types: `Quiz`, `Question`, `QuizAttempt`, `SubmitAttemptResult`
 
-Nothing else is exported cross-feature yet — no other feature currently links to a quiz (see Known Constraints on discovery).
+Nothing else is exported cross-feature yet, but `courses`' `CourseModuleList`/`LessonPage` now link *to* a quiz using `Lesson.quizId` (see Known Constraints — discovery is closed from that direction).
 
 ## Design Decisions
 - **Attempt state lives in a Zustand store** (`stores/quiz.store.ts`: `attemptId`, `answers`), not component state — `QuizAttemptPage`, `QuizAttemptForm`, and `QuestionCard` all need it, and `FE-ARCHITECTURE.md` §7 explicitly calls out "in-progress quiz attempt" as the canonical example of feature-scoped Zustand state.
@@ -27,6 +27,6 @@ Nothing else is exported cross-feature yet — no other feature currently links 
 - **`onRetake` just calls `reset()`** on the store (clears `attemptId`/`answers`), dropping back to the `QuizCard` phase so the student can call `POST /quizzes/:id/attempts` again — the backend allows unlimited attempts (no max-attempts constraint), so this is a real retake, not a dead end.
 
 ## Known Constraints / Deferred
-- **No discovery path from a course/lesson to a quiz** — `courses`' `Lesson` type has no `quizId`, and the backend has no "list quizzes for a lesson" endpoint, so nothing links here yet. `/quizzes/:id/attempt` is reachable only by direct URL. Wiring a "Take Quiz" link into `CourseModuleList` needs a backend endpoint that doesn't exist in `API_SPEC.md` yet.
+- ~~No discovery path from a course/lesson to a quiz~~ **Closed**: the backend's `GET /courses/:id` now resolves each lesson's linked `Quiz` id (`Lesson.quizId`, see backend `courses/context.md`), and `courses`' `CourseModuleList` renders a "Take quiz" link to `/quizzes/:id/attempt` wherever it's set.
 - **No quiz results history** — there's no `GET /quizzes/:id/attempts` or similar in `API_SPEC.md`, so a student can't review past attempts; only the just-submitted result is shown, and it's lost on navigation away.
 - **No timer enforcement for `timeLimitSec`** — displayed on `QuizCard` but nothing counts down or auto-submits; the backend doesn't enforce it either (see backend `context.md`).

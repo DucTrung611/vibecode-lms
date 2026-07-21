@@ -6,6 +6,7 @@ import { Skeleton } from '@/shared/components/Skeleton';
 
 const CourseCatalogPage = lazy(() => import('./CourseCatalogPage'));
 const CourseDetailPage = lazy(() => import('./CourseDetailPage'));
+const LessonPage = lazy(() => import('./LessonPage'));
 const InstructorCourseCreatePage = lazy(
   () => import('./InstructorCourseCreatePage'),
 );
@@ -37,6 +38,16 @@ export const coursesRoutes: RouteObject[] = [
       <Suspense fallback={<PageFallback />}>
         <CourseDetailPage />
       </Suspense>
+    ),
+  },
+  {
+    path: '/courses/:courseId/lessons/:lessonId',
+    element: (
+      <ProtectedRoute role="STUDENT">
+        <Suspense fallback={<PageFallback />}>
+          <LessonPage />
+        </Suspense>
+      </ProtectedRoute>
     ),
   },
   {

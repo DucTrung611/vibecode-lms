@@ -1,6 +1,8 @@
+import { Link } from 'react-router-dom';
 import type { CourseModule } from '../types/courses.types';
 
 interface CourseModuleListProps {
+  courseId: string;
   modules: CourseModule[];
 }
 
@@ -11,7 +13,7 @@ const LESSON_TYPE_LABELS: Record<string, string> = {
   ASSIGNMENT: 'Assignment',
 };
 
-export function CourseModuleList({ modules }: CourseModuleListProps) {
+export function CourseModuleList({ courseId, modules }: CourseModuleListProps) {
   if (modules.length === 0) {
     return <p className="text-sm text-gray-500">No modules yet.</p>;
   }
@@ -28,9 +30,32 @@ export function CourseModuleList({ modules }: CourseModuleListProps) {
                   key={lesson.id}
                   className="flex items-center justify-between text-sm text-gray-700"
                 >
-                  <span>{lesson.title}</span>
-                  <span className="text-xs text-gray-500">
-                    {LESSON_TYPE_LABELS[lesson.type]}
+                  <Link
+                    to={`/courses/${courseId}/lessons/${lesson.id}`}
+                    className="hover:text-purple-600 hover:underline"
+                  >
+                    {lesson.title}
+                  </Link>
+                  <span className="flex items-center gap-2">
+                    {lesson.quizId ? (
+                      <Link
+                        to={`/quizzes/${lesson.quizId}/attempt`}
+                        className="text-xs font-medium text-purple-600 hover:underline"
+                      >
+                        Take quiz
+                      </Link>
+                    ) : null}
+                    {lesson.assignmentId ? (
+                      <Link
+                        to={`/assignments/${lesson.assignmentId}/submit`}
+                        className="text-xs font-medium text-purple-600 hover:underline"
+                      >
+                        View assignment
+                      </Link>
+                    ) : null}
+                    <span className="text-xs text-gray-500">
+                      {LESSON_TYPE_LABELS[lesson.type]}
+                    </span>
                   </span>
                 </li>
               ))}

@@ -18,6 +18,8 @@ export interface Lesson {
   content: string | null;
   durationSec: number | null;
   order: number;
+  quizId: string | null;
+  assignmentId: string | null;
 }
 
 export interface CourseModule {

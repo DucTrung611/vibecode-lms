@@ -24,6 +24,6 @@ All 3 backend endpoints are consumed.
 - **Submission and grading forms use `react-hook-form` + `zod`** (`SubmissionForm`, `GradeForm`), consistent with `courses`' `CourseForm` — not the plain-`useState` pattern `quizzes` uses for its answer inputs, because these are real validated forms (URL format, "at least one of fileUrl/content", non-negative score), not a dynamic list of per-question inputs.
 
 ## Known Constraints / Deferred
-- **No discovery path from a course/lesson to an assignment or a submission's grading link** — same gap `quizzes` has: no `quizId`/`assignmentId` on the `Lesson` type, no listing endpoint. Both pages are reachable only by direct URL.
+- ~~No discovery path from a course/lesson to an assignment~~ **Closed** for the student-facing side: `courses`' `CourseModuleList` now renders a "View assignment" link to `/assignments/:id/submit` using the backend's new `Lesson.assignmentId` field (see backend `courses/context.md`). The submission's grading link (`/submissions/:id/grade`) is still undiscoverable — see below.
 - **No submission-listing UI for instructors** — matches the backend's own deferred "list submissions for this assignment" endpoint; an instructor needs a submission `id` from elsewhere to reach `/submissions/:id/grade`.
 - **No file upload** — `fileUrl` is a plain URL text field, consistent with `courses`' deferred upload handling.
