@@ -111,7 +111,18 @@ describe('CourseRepository', () => {
 
       expect(prisma.course.findFirst).toHaveBeenCalledWith({
         where: { id: 'course_1', deletedAt: null },
-        include: { modules: { include: { lessons: true } } },
+        include: {
+          modules: {
+            include: {
+              lessons: {
+                include: {
+                  quizzes: { select: { id: true } },
+                  assignments: { select: { id: true } },
+                },
+              },
+            },
+          },
+        },
       });
     });
   });

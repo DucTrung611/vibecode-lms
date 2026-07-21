@@ -37,6 +37,7 @@ Other features must inject `CoursesService` — never `CourseRepository`/`Module
 - **Ownership check**: `PATCH/DELETE /courses/:id` and `POST /courses/:id/modules` verify `course.instructorId === currentUser.id` in the service layer (not the guard) — `RolesGuard` only confirms the caller *is* an instructor, not that they own *this* course.
 - **`order` fields** (`Module.order`, `Lesson.order`): auto-assigned as the current sibling count when the DTO omits `order`, so callers can append without tracking indices themselves.
 - **Price**: Prisma `Decimal` is converted to `number` in `CourseEntity` for a plain-JSON API response.
+- **`LessonEntity.quizId`/`assignmentId`**: `GET /courses/:id`'s `detailInclude` now also pulls each lesson's linked `quizzes`/`assignments` (id only, via the `Lesson.quizzes`/`Lesson.assignments` relations already in `schema.prisma`), and `LessonEntity.fromPrisma` collapses each to a single nullable id (`lesson.quizzes?.[0]?.id ?? null`). This closes the "no discovery path from a course to its quizzes/assignments" gap both `quizzes`' and `assignments`' frontend `context.md` files flagged — the frontend can now render a "Take Quiz"/"View Assignment" link directly from a lesson without a separate lookup endpoint. Takes the *first* linked quiz/assignment only; `DATABASE.md` doesn't define a per-lesson cardinality limit, but `API_SPEC.md`'s UI-facing flows only ever need one link per lesson.
 
 ## Error Codes
 Reuses `COURSE_004` (404, course not found) and `AUTH_003` (403, reused for ownership failures — RolesGuard already produces this same code for role failures, so "instructor but not the owner" and "not an instructor" surface identically to API consumers). Adds two new codes, following the same `COURSE_[NUMBER]` format (not yet in `API_SPEC.md` §5):
@@ -52,4 +53,3 @@ Reuses `COURSE_004` (404, course not found) and `AUTH_003` (403, reused for owne
 ## Known Constraints / Deferred
 - No category management endpoints (create/list/update) — `categoryId` is only existence-checked against the `categories` table seeded some other way.
 - No file upload for `thumbnailUrl`/`videoUrl`/lesson `Resource` — those are plain string URL fields for now; wiring real `multipart/form-data` uploads (`API_SPEC.md` §3) is deferred to whichever feature needs it first.
-- No tests yet for this feature — deferred per explicit instruction to prioritize finishing Phase 1's feature set first.

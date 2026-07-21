@@ -151,6 +151,66 @@ describe('CoursesService', () => {
 
       expect(result.id).toBe('course_1');
     });
+
+    it("resolves each lesson's linked quiz/assignment ids for discovery", async () => {
+      courseRepository.findByIdWithDetail.mockResolvedValue({
+        ...fakeCourse,
+        modules: [
+          {
+            id: 'module_1',
+            courseId: 'course_1',
+            title: 'Module 1',
+            order: 0,
+            lessons: [
+              {
+                id: 'lesson_1',
+                moduleId: 'module_1',
+                title: 'Lesson 1',
+                type: 'QUIZ',
+                videoUrl: null,
+                content: null,
+                durationSec: null,
+                order: 0,
+                quizzes: [{ id: 'quiz_1' }],
+                assignments: [],
+              },
+              {
+                id: 'lesson_2',
+                moduleId: 'module_1',
+                title: 'Lesson 2',
+                type: 'ASSIGNMENT',
+                videoUrl: null,
+                content: null,
+                durationSec: null,
+                order: 1,
+                quizzes: [],
+                assignments: [{ id: 'assignment_1' }],
+              },
+              {
+                id: 'lesson_3',
+                moduleId: 'module_1',
+                title: 'Lesson 3',
+                type: 'VIDEO',
+                videoUrl: 'https://example.com/video.mp4',
+                content: null,
+                durationSec: 120,
+                order: 2,
+              },
+            ],
+          },
+        ],
+      } as never);
+
+      const result = await service.findById('course_1');
+
+      const [lesson1, lesson2, lesson3] = result.modules![0].lessons!;
+      expect(lesson1.quizId).toBe('quiz_1');
+      expect(lesson1.assignmentId).toBeNull();
+      expect(lesson2.assignmentId).toBe('assignment_1');
+      expect(lesson2.quizId).toBeNull();
+      expect(lesson3.quizId).toBeNull();
+      expect(lesson3.assignmentId).toBeNull();
+    });
   });
 
   describe('create', () => {

@@ -25,7 +25,16 @@ export interface UpdateCourseData {
 }
 
 const detailInclude = {
-  modules: { include: { lessons: true } },
+  modules: {
+    include: {
+      lessons: {
+        include: {
+          quizzes: { select: { id: true } },
+          assignments: { select: { id: true } },
+        },
+      },
+    },
+  },
 } satisfies Prisma.CourseInclude;
 
 @Injectable()

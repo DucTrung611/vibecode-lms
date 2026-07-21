@@ -1,4 +1,5 @@
-import { Course, Module as ModuleModel, Lesson } from '@prisma/client';
+import { Course, Module as ModuleModel } from '@prisma/client';
+import { LessonWithLinks } from './lesson.entity';
 import { ModuleEntity } from './module.entity';
 
 export class CourseEntity {
@@ -17,7 +18,9 @@ export class CourseEntity {
   modules?: ModuleEntity[];
 
   static fromPrisma(
-    course: Course & { modules?: (ModuleModel & { lessons: Lesson[] })[] },
+    course: Course & {
+      modules?: (ModuleModel & { lessons: LessonWithLinks[] })[];
+    },
   ): CourseEntity {
     const entity = new CourseEntity();
     entity.id = course.id;

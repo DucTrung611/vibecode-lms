@@ -1,5 +1,5 @@
-import { Module as ModuleModel, Lesson } from '@prisma/client';
-import { LessonEntity } from './lesson.entity';
+import { Module as ModuleModel } from '@prisma/client';
+import { LessonEntity, LessonWithLinks } from './lesson.entity';
 
 export class ModuleEntity {
   id: string;
@@ -9,7 +9,7 @@ export class ModuleEntity {
   lessons?: LessonEntity[];
 
   static fromPrisma(
-    module: ModuleModel & { lessons?: Lesson[] },
+    module: ModuleModel & { lessons?: LessonWithLinks[] },
   ): ModuleEntity {
     const entity = new ModuleEntity();
     entity.id = module.id;
