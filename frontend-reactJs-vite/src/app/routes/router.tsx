@@ -4,6 +4,7 @@ import { certificateRoutes } from '@/features/certificates';
 import { coursesRoutes } from '@/features/courses';
 import { enrollmentRoutes } from '@/features/enrollment';
 import { identityRoutes } from '@/features/identity';
+import { learningPathRoutes } from '@/features/learning-paths';
 import { notificationRoutes } from '@/features/notifications';
 import { paymentRoutes } from '@/features/payments';
 import { quizRoutes } from '@/features/quizzes';
@@ -23,4 +24,5 @@ export const router = createBrowserRouter([
   ...certificateRoutes,
   ...notificationRoutes,
   ...paymentRoutes,
+  ...learningPathRoutes,
 ]);
