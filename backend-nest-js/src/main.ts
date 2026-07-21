@@ -11,6 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService<AppConfig, true>);
 
+  app.setGlobalPrefix('api/v1');
   app.use(helmet());
   app.enableCors();
   app.useGlobalPipes(
