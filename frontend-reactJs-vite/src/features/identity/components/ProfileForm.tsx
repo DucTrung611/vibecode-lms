@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/shared/components/Button';
+import { FileUploadButton } from '@/shared/components/FileUploadButton';
 import type { AuthUser } from '@/shared/types/api.types';
 import { useUpdateProfile } from '../hooks/useUpdateProfile';
 import {
@@ -17,6 +18,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<UpdateProfilePayload>({
     resolver: zodResolver(updateProfileSchema),
@@ -46,12 +48,21 @@ export function ProfileForm({ user }: ProfileFormProps) {
       </div>
 
       <div>
-        <label
-          htmlFor="avatarUrl"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Avatar URL
-        </label>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="avatarUrl"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Avatar URL
+          </label>
+          <FileUploadButton
+            accept="image/*"
+            label="Upload photo"
+            onUploaded={(fileUrl) =>
+              setValue('avatarUrl', fileUrl, { shouldValidate: true })
+            }
+          />
+        </div>
         <input
           id="avatarUrl"
           type="url"

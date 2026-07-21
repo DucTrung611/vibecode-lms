@@ -31,7 +31,7 @@ Other features needing "is logged in" / "current user" should read `useAuthStore
 
 ## Known Constraints / Deferred
 - No "forgot password" flow — not in `API_SPEC.md` for this phase.
-- Avatar upload is a raw URL field for now; a real file-upload widget depends on the `multipart/form-data` convention (`API_SPEC.md` §3) and isn't wired here.
+- ~~Avatar upload is a raw URL field for now~~ **Closed**: `ProfileForm`'s `avatarUrl` field now has a `shared/components/FileUploadButton.tsx` next to it (calls `POST /uploads`, then `setValue('avatarUrl', fileUrl)`) — the URL text input stays too, so pasting an already-hosted image URL still works.
 - Added `@hookform/resolvers` as a new dependency — the pairing (`react-hook-form` + `zod`) was already decided in `FE-PROJECT-RULES.md` §5, but the resolver glue package wasn't installed yet.
 - Extended shared `auth.store.ts` with a `setUser` setter (previously only `setSession`/`setAccessToken`/`clearSession` existed) so profile fetch/update can refresh the cached user without re-authenticating.
 - The repo had no test runner yet (Phase 0 scaffold gap). Added Vitest + Testing Library (`vite.config.ts` `test` block, `src/test/setup.ts`, `src/test/test-utils.tsx`, `npm test` / `npm run test:watch`) to make `FE-PROJECT-RULES.md` §8 actually runnable — this is shared infra, not identity-specific, and later features should reuse it rather than re-adding a test runner.

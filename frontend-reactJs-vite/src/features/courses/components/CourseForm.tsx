@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/shared/components/Button';
+import { FileUploadButton } from '@/shared/components/FileUploadButton';
 import {
   COURSE_LEVELS,
   COURSE_STATUSES,
@@ -25,6 +26,7 @@ export function CourseForm({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<UpdateCourseFormValues>({
     resolver: zodResolver(updateCourseFormSchema),
@@ -134,12 +136,21 @@ export function CourseForm({
       )}
 
       <div>
-        <label
-          htmlFor="thumbnailUrl"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Thumbnail URL
-        </label>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="thumbnailUrl"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Thumbnail URL
+          </label>
+          <FileUploadButton
+            accept="image/*"
+            label="Upload image"
+            onUploaded={(fileUrl) =>
+              setValue('thumbnailUrl', fileUrl, { shouldValidate: true })
+            }
+          />
+        </div>
         <input
           id="thumbnailUrl"
           type="url"

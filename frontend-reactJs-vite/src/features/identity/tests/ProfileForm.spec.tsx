@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createTestQueryClient, createWrapper } from '@/test/test-utils';
 import { ProfileForm } from '../components/ProfileForm';
 import { useUpdateProfile } from '../hooks/useUpdateProfile';
 
@@ -24,14 +25,18 @@ describe('ProfileForm', () => {
   });
 
   it('pre-fills the full name from the current user', () => {
-    render(<ProfileForm user={user} />);
+    render(<ProfileForm user={user} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     expect(screen.getByLabelText(/full name/i)).toHaveValue('A B');
   });
 
   it('submits the mutation with the edited fields', async () => {
     const userEventInstance = userEvent.setup();
-    render(<ProfileForm user={user} />);
+    render(<ProfileForm user={user} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     const fullNameInput = screen.getByLabelText(/full name/i);
     await userEventInstance.clear(fullNameInput);
@@ -54,7 +59,9 @@ describe('ProfileForm', () => {
       isPending: true,
     } as unknown as ReturnType<typeof useUpdateProfile>);
 
-    render(<ProfileForm user={user} />);
+    render(<ProfileForm user={user} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled();
   });

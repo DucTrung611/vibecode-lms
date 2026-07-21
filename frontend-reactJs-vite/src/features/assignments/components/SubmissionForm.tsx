@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/shared/components/Button';
+import { FileUploadButton } from '@/shared/components/FileUploadButton';
 import {
   submissionFormSchema,
   type SubmissionFormValues,
@@ -15,6 +16,7 @@ export function SubmissionForm({ isPending, onSubmit }: SubmissionFormProps) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<SubmissionFormValues>({
     resolver: zodResolver(submissionFormSchema),
@@ -40,9 +42,20 @@ export function SubmissionForm({ isPending, onSubmit }: SubmissionFormProps) {
       </div>
 
       <div>
-        <label htmlFor="fileUrl" className="block text-sm font-medium text-gray-700">
-          File URL
-        </label>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="fileUrl"
+            className="block text-sm font-medium text-gray-700"
+          >
+            File URL
+          </label>
+          <FileUploadButton
+            label="Upload file"
+            onUploaded={(fileUrl) =>
+              setValue('fileUrl', fileUrl, { shouldValidate: true })
+            }
+          />
+        </div>
         <input
           id="fileUrl"
           type="url"

@@ -1,13 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { createTestQueryClient, createWrapper } from '@/test/test-utils';
 import { SubmissionForm } from '../components/SubmissionForm';
 
 describe('SubmissionForm', () => {
   it('shows a validation error and does not submit when both fields are empty', async () => {
     const onSubmit = vi.fn();
     const user = userEvent.setup();
-    render(<SubmissionForm isPending={false} onSubmit={onSubmit} />);
+    render(<SubmissionForm isPending={false} onSubmit={onSubmit} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     await user.click(screen.getByRole('button', { name: /submit assignment/i }));
 
@@ -20,7 +23,9 @@ describe('SubmissionForm', () => {
   it('submits with just written content', async () => {
     const onSubmit = vi.fn();
     const user = userEvent.setup();
-    render(<SubmissionForm isPending={false} onSubmit={onSubmit} />);
+    render(<SubmissionForm isPending={false} onSubmit={onSubmit} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     await user.type(screen.getByLabelText(/written answer/i), 'my essay');
     await user.click(screen.getByRole('button', { name: /submit assignment/i }));
@@ -35,7 +40,9 @@ describe('SubmissionForm', () => {
   it('rejects an invalid file URL', async () => {
     const onSubmit = vi.fn();
     const user = userEvent.setup();
-    render(<SubmissionForm isPending={false} onSubmit={onSubmit} />);
+    render(<SubmissionForm isPending={false} onSubmit={onSubmit} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     await user.type(screen.getByLabelText(/file url/i), 'not-a-url');
     await user.click(screen.getByRole('button', { name: /submit assignment/i }));
@@ -45,7 +52,9 @@ describe('SubmissionForm', () => {
   });
 
   it('disables the submit button and shows a pending label while submitting', () => {
-    render(<SubmissionForm isPending={true} onSubmit={vi.fn()} />);
+    render(<SubmissionForm isPending={true} onSubmit={vi.fn()} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     expect(
       screen.getByRole('button', { name: /submitting/i }),

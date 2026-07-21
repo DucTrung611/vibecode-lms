@@ -1,11 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { createTestQueryClient, createWrapper } from '@/test/test-utils';
 import { CourseForm } from '../components/CourseForm';
 
 describe('CourseForm', () => {
   it('does not render a status field in create mode', () => {
-    render(<CourseForm mode="create" isPending={false} onSubmit={vi.fn()} />);
+    render(<CourseForm mode="create" isPending={false} onSubmit={vi.fn()} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     expect(screen.queryByLabelText(/status/i)).not.toBeInTheDocument();
   });
@@ -24,6 +27,7 @@ describe('CourseForm', () => {
           status: 'PUBLISHED',
         }}
       />,
+      { wrapper: createWrapper(createTestQueryClient()) },
     );
 
     expect(screen.getByLabelText(/title/i)).toHaveValue('Intro');
@@ -33,7 +37,9 @@ describe('CourseForm', () => {
   it('shows validation errors and does not submit for empty required fields', async () => {
     const onSubmit = vi.fn();
     const user = userEvent.setup();
-    render(<CourseForm mode="create" isPending={false} onSubmit={onSubmit} />);
+    render(<CourseForm mode="create" isPending={false} onSubmit={onSubmit} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     await user.click(screen.getByRole('button', { name: /create course/i }));
 
@@ -47,7 +53,9 @@ describe('CourseForm', () => {
   it('submits with the default DRAFT status in create mode', async () => {
     const onSubmit = vi.fn();
     const user = userEvent.setup();
-    render(<CourseForm mode="create" isPending={false} onSubmit={onSubmit} />);
+    render(<CourseForm mode="create" isPending={false} onSubmit={onSubmit} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     await user.type(screen.getByLabelText(/title/i), 'Intro to Algebra');
     await user.type(screen.getByLabelText(/description/i), 'A course');
@@ -65,7 +73,9 @@ describe('CourseForm', () => {
   });
 
   it('disables the submit button and shows the correct label while pending', () => {
-    render(<CourseForm mode="edit" isPending={true} onSubmit={vi.fn()} />);
+    render(<CourseForm mode="edit" isPending={true} onSubmit={vi.fn()} />, {
+      wrapper: createWrapper(createTestQueryClient()),
+    });
 
     expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled();
   });

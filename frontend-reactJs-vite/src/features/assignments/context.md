@@ -26,4 +26,4 @@ All 3 backend endpoints are consumed.
 ## Known Constraints / Deferred
 - ~~No discovery path from a course/lesson to an assignment~~ **Closed** for the student-facing side: `courses`' `CourseModuleList` now renders a "View assignment" link to `/assignments/:id/submit` using the backend's new `Lesson.assignmentId` field (see backend `courses/context.md`). The submission's grading link (`/submissions/:id/grade`) is still undiscoverable — see below.
 - **No submission-listing UI for instructors** — matches the backend's own deferred "list submissions for this assignment" endpoint; an instructor needs a submission `id` from elsewhere to reach `/submissions/:id/grade`.
-- **No file upload** — `fileUrl` is a plain URL text field, consistent with `courses`' deferred upload handling.
+- ~~No file upload~~ **Closed**: `SubmissionForm`'s `fileUrl` field now has a `shared/components/FileUploadButton.tsx` next to it, same pattern `identity`'s `ProfileForm` and `courses`' `CourseForm`/`AddLessonForm` use.
