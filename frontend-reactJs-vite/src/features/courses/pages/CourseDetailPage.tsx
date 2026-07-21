@@ -67,6 +67,15 @@ export default function CourseDetailPage() {
         <CourseModuleList modules={course.modules ?? []} />
       </div>
 
+      {currentUser?.role === 'STUDENT' ? (
+        <Link
+          to={`/chat?courseId=${course.id}`}
+          className="inline-block text-sm font-medium text-purple-600 hover:underline"
+        >
+          Ask the AI assistant about this course
+        </Link>
+      ) : null}
+
       <CourseReviews courseId={course.id} />
     </div>
   );

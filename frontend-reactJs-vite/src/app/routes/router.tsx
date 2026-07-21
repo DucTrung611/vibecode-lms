@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import { chatRoutes } from '@/features/ai-chatbot';
 import { assignmentRoutes } from '@/features/assignments';
 import { certificateRoutes } from '@/features/certificates';
 import { coursesRoutes } from '@/features/courses';
@@ -25,4 +26,5 @@ export const router = createBrowserRouter([
   ...notificationRoutes,
   ...paymentRoutes,
   ...learningPathRoutes,
+  ...chatRoutes,
 ]);
