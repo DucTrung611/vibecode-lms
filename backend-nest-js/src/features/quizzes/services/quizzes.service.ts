@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { AiClientService } from '../../../core/ai/ai-client.service';
 import { ApiException } from '../../../shared/types/api-error-code.type';
 import { CoursesService } from '../../courses/services/courses.service';
 import { EnrollmentService } from '../../enrollment/services/enrollment.service';
+import { GenerateQuizDto } from '../dto/generate-quiz.dto';
 import { SubmitAttemptDto } from '../dto/submit-attempt.dto';
+import { GeneratedQuizEntity } from '../entities/generated-quiz.entity';
 import { QuizAttemptEntity } from '../entities/quiz-attempt.entity';
 import { QuizEntity } from '../entities/quiz.entity';
 import { QuizAttemptRepository } from '../repositories/quiz-attempt.repository';
@@ -10,7 +13,12 @@ import {
   QuizRepository,
   QuizWithQuestions,
 } from '../repositories/quiz.repository';
+import { parseGeneratedQuiz } from '../utils/parse-generated-quiz.util';
+import { buildQuizGenerationPrompt } from '../utils/quiz-prompt.util';
 import { gradeAttempt } from '../utils/scoring.util';
+
+const DEFAULT_QUESTION_COUNT = 5;
+const DEFAULT_PASS_SCORE = 70;
 
 @Injectable()
 export class QuizzesService {
@@ -21,6 +29,7 @@ export class QuizzesService {
     private readonly quizAttemptRepository: QuizAttemptRepository,
     private readonly coursesService: CoursesService,
     private readonly enrollmentService: EnrollmentService,
+    private readonly aiClient: AiClientService,
   ) {}
 
   async findById(studentId: string, quizId: string): Promise<QuizEntity> {
@@ -95,6 +104,44 @@ export class QuizzesService {
         isCorrect: answer.isCorrect,
       })),
     };
+  }
+
+  async generateFromLesson(
+    instructorId: string,
+    lessonId: string,
+    dto: GenerateQuizDto,
+  ): Promise<GeneratedQuizEntity> {
+    const courseId = await this.coursesService.findCourseIdByLessonId(lessonId);
+    const course = await this.coursesService.findById(courseId);
+    if (course.instructorId !== instructorId) {
+      throw new ApiException(403, 'AUTH_003', 'You do not own this course');
+    }
+
+    const lesson = await this.coursesService.findLessonById(lessonId);
+    const questionCount = dto.questionCount ?? DEFAULT_QUESTION_COUNT;
+
+    const raw = await this.aiClient.complete([
+      {
+        role: 'system',
+        content:
+          'You are an assistant that writes multiple-choice quiz questions strictly as JSON, with no prose or markdown.',
+      },
+      {
+        role: 'user',
+        content: buildQuizGenerationPrompt(lesson, questionCount),
+      },
+    ]);
+    const questions = parseGeneratedQuiz(raw);
+
+    const quiz = await this.quizRepository.createGenerated({
+      lessonId,
+      title: `${lesson.title} — Quiz`,
+      passScore: DEFAULT_PASS_SCORE,
+      questions,
+    });
+
+    this.logger.log(`AI-generated quiz ${quiz.id} for lesson ${lessonId}`);
+    return GeneratedQuizEntity.fromPrisma(quiz);
   }
 
   private async getQuizOrThrow(quizId: string): Promise<QuizWithQuestions> {

@@ -20,6 +20,10 @@ export class LessonRepository {
     return this.prisma.lesson.count({ where: { moduleId } });
   }
 
+  findById(id: string): Promise<Lesson | null> {
+    return this.prisma.lesson.findUnique({ where: { id } });
+  }
+
   create(data: CreateLessonData): Promise<Lesson> {
     return this.prisma.lesson.create({ data });
   }
