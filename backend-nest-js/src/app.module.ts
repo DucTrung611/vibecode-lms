@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import configuration, { configValidationSchema } from './config/configuration';
 import { CoreModule } from './core/core.module';
+import { AiChatbotModule } from './features/ai-chatbot/ai-chatbot.module';
 import { AssignmentsModule } from './features/assignments/assignments.module';
 import { CertificatesModule } from './features/certificates/certificates.module';
 import { CoursesModule } from './features/courses/courses.module';
@@ -36,6 +37,7 @@ import { ReviewsModule } from './features/reviews/reviews.module';
     NotificationsModule,
     PaymentsModule,
     LearningPathsModule,
+    AiChatbotModule,
   ],
   controllers: [AppController],
   providers: [AppService],
