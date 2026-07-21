@@ -1,11 +1,13 @@
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+}
+
 export interface ApiSuccess<T> {
   success: true;
   data: T;
-  meta?: {
-    page: number;
-    limit: number;
-    total: number;
-  };
+  meta?: PaginationMeta;
 }
 
 export interface ApiErrorPayload {

@@ -32,12 +32,16 @@ A learning management system (LMS). Covers course catalog & authoring, enrollmen
 - `/fe-test [name]` - Write frontend tests for an existing feature
 - `/db-migrate <desc>` - Create a Prisma migration following DATABASE.md conventions
 
+### UI/Design
+- `/fe-polish [feature-or-page]` - Polish the visual design of an *existing* frontend feature (spacing, typography, color, states, responsiveness, accessibility) — styling only, no logic changes, no new deps
+
 ### Skill Routing
 When user asks to:
 - "tạo feature", "add module", "generate feature" → Use `/be-feature` or `/fe-feature`
 - "viết test", "add tests" → Use `/be-test` or `/fe-test`
 - "init project", "setup structure", "scaffold" → Use `/init-base`
 - "đổi schema", "thêm bảng", "migration" → Use `/db-migrate`
+- "làm đẹp UI", "UI đẹp hơn", "polish UI", "improve design", "make it look better" → Use `/fe-polish`
 
 ### Important
 - Always read the shared docs above BEFORE generating code
