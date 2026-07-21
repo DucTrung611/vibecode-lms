@@ -58,17 +58,51 @@ Both shapes are produced globally by `ResponseInterceptor` / `HttpExceptionFilte
 
 | Code | HTTP Status | Meaning |
 |---|---|---|
-| `AUTH_001` | 401 | Missing/invalid token |
-| `AUTH_002` | 401 | Token expired |
-| `AUTH_003` | 403 | Insufficient role/permission |
+| `AUTH_001` | 401 | Missing/invalid access token |
+| `AUTH_002` | 401 | Access or refresh token expired |
+| `AUTH_003` | 403 | Insufficient role/permission, or resource doesn't belong to the caller |
+| `AUTH_004` | 409 | Email already registered |
+| `AUTH_005` | 401 | Invalid email or password |
+| `AUTH_006` | 401 | Invalid or revoked refresh token |
+| `AUTH_007` | 404 | User not found |
 | `VALIDATION_001` | 400 | DTO validation failed (`details` lists field errors) |
-| `COURSE_004` | 404 | Course not found |
-| `ENROLLMENT_001` | 409 | Already enrolled in this course |
-| `QUIZ_002` | 409 | Quiz attempt already submitted |
-| `ASSIGNMENT_003` | 400 | Submission after due date without late-submission policy |
+| `COMMON_404` | 404 | Generic not-found fallback (route threw a plain `NotFoundException`, not a feature-specific `ApiException`) |
+| `COMMON_409` | 409 | Generic conflict fallback (route threw a plain `ConflictException`, not a feature-specific `ApiException`) |
 | `COMMON_500` | 500 | Unhandled internal error |
+| `COURSE_004` | 404 | Course not found |
+| `COURSE_005` | 404 | Category not found |
+| `COURSE_006` | 404 | Module not found |
+| `COURSE_007` | 404 | Lesson not found |
+| `ENROLLMENT_001` | 409 | Already enrolled in this course |
+| `ENROLLMENT_002` | 404 | Enrollment not found |
+| `ENROLLMENT_003` | 404 | Lesson not found in this course |
+| `QUIZ_001` | 404 | Quiz not found |
+| `QUIZ_002` | 409 | Quiz attempt already submitted |
+| `QUIZ_003` | 404 | Attempt not found |
+| `QUIZ_004` | 502 | AI provider returned an invalid quiz format when generating a quiz |
+| `ASSIGNMENT_001` | 404 | Assignment not found |
+| `ASSIGNMENT_002` | 409 | Already submitted this assignment |
+| `ASSIGNMENT_003` | 400 | Submission after due date without late-submission policy |
+| `ASSIGNMENT_004` | 404 | Submission not found |
+| `ASSIGNMENT_005` | 400 | Submission must include a `fileUrl` or `content` |
+| `ASSIGNMENT_006` | 400 | Score exceeds the assignment's `maxScore` |
+| `CERTIFICATE_001` | 404 | Certificate not found |
+| `LEARNING_PATH_001` | 404 | Learning path not found |
+| `LEARNING_PATH_002` | 409 | Already enrolled in this learning path |
+| `LEARNING_PATH_003` | 502 | AI provider returned an invalid learning path format when generating a path |
+| `LEARNING_PATH_004` | 422 | No published courses available to build a learning path from |
+| `REVIEW_001` | 409 | Already reviewed this course |
+| `NOTIFICATION_001` | 404 | Notification not found |
+| `CHAT_001` | 404 | Chat session not found |
+| `CHAT_002` | 429 | Rate limit on AI calls exceeded — reserved in this table; not yet enforced by `ai-chatbot` (see its `context.md`) |
+| `PAYMENT_001` | 402 | Payment required for this course |
+| `PAYMENT_002` | 404 | Order not found |
+| `PAYMENT_003` | 409 | Order is not payable |
+| `UPLOAD_001` | 400 | No file provided to `POST /uploads` |
+| `AI_001` | 503 | AI provider is not configured (no API key set) — features with a non-AI fallback (e.g. the chatbot) swallow this instead of surfacing it |
+| `AI_002` | 502 | AI provider request failed, returned a non-OK status, or returned an unparseable/empty response |
 
-**HTTP status usage**: `200` read/update OK, `201` created, `204` deleted, `400` validation, `401` auth, `403` forbidden, `404` not found, `409` conflict, `500` server error.
+**HTTP status usage**: `200` read/update OK, `201` created, `204` deleted, `400` validation, `401` auth, `402` payment required, `403` forbidden, `404` not found, `409` conflict, `422` request understood but semantically unprocessable (e.g. nothing to generate from), `429` rate limited, `500` server error, `502`/`503` upstream AI provider failure/unavailable.
 
 ## 6. Endpoints by Feature
 
