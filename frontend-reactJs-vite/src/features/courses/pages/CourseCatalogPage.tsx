@@ -1,8 +1,8 @@
 import { useState } from 'react';
+import { Pagination } from '@/shared/components/Pagination';
 import { Skeleton } from '@/shared/components/Skeleton';
 import { CourseCard } from '../components/CourseCard';
 import { CourseFilters } from '../components/CourseFilters';
-import { CoursePagination } from '../components/CoursePagination';
 import { useCourses } from '../hooks/useCourses';
 import type { CourseLevel } from '../types/courses.types';
 
@@ -54,7 +54,7 @@ export default function CourseCatalogPage() {
               <CourseCard key={course.id} course={course} />
             ))}
           </div>
-          <CoursePagination meta={data.meta} onPageChange={setPage} />
+          <Pagination meta={data.meta} onPageChange={setPage} />
         </>
       ) : (
         <p className="text-center text-gray-500">No courses found.</p>

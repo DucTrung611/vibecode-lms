@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Pagination } from '@/shared/components/Pagination';
 import { Skeleton } from '@/shared/components/Skeleton';
 import { ReviewCard } from './ReviewCard';
 import { useCourseReviews } from '../hooks/useCourseReviews';
@@ -7,7 +9,8 @@ interface ReviewListProps {
 }
 
 export function ReviewList({ courseId }: ReviewListProps) {
-  const { data, isPending, isError } = useCourseReviews(courseId);
+  const [page, setPage] = useState(1);
+  const { data, isPending, isError } = useCourseReviews(courseId, page);
 
   if (isPending) {
     return (
@@ -28,10 +31,13 @@ export function ReviewList({ courseId }: ReviewListProps) {
   }
 
   return (
-    <ul className="space-y-3">
-      {data.items.map((review) => (
-        <ReviewCard key={review.id} review={review} />
-      ))}
-    </ul>
+    <div className="space-y-3">
+      <ul className="space-y-3">
+        {data.items.map((review) => (
+          <ReviewCard key={review.id} review={review} />
+        ))}
+      </ul>
+      <Pagination meta={data.meta} onPageChange={setPage} />
+    </div>
   );
 }

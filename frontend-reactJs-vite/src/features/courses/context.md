@@ -48,6 +48,7 @@ All 7 endpoints from `API_SPEC.md` §Courses are consumed, plus the backend's ne
 ## Shared-layer changes made while building this feature
 - Extended `app/routes/ProtectedRoute.tsx` with an optional `role` prop (previously only checked `isAuthenticated`) — implements the "role-gated sub-trees ... check `user.role`" pattern `FE-ARCHITECTURE.md` §6 already describes but that hadn't been built yet. Used here for `/instructor/courses/*`.
 - Added a named `PaginationMeta` type to `shared/types/api.types.ts` (previously inlined on `ApiSuccess.meta`) so `CoursePagination` (and future list features) can reference it instead of re-declaring the shape.
+- **`CoursePagination` was promoted to `shared/components/Pagination.tsx` and deleted from this feature** once `enrollment`/`certificates`/`notifications`/`payments`/`reviews`/`assignments` all needed the identical Prev/Next-by-`PaginationMeta` control and `learning-paths` had already independently duplicated it inline (see those features' own `context.md` "Known Constraints" entries for the before-state). `CourseCatalogPage` now imports `Pagination` from `@/shared/components/Pagination` like every other consumer — no behavior change, pure de-duplication.
 
 ## Known Constraints / Deferred
 - No drag-to-reorder for modules/lessons.

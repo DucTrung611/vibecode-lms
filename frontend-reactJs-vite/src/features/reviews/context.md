@@ -24,6 +24,6 @@ Both endpoints implemented in `backend-nest-js/src/features/reviews` are consume
 - **After a successful submission, `ReviewForm` is replaced by nothing** (`CourseReviews` hides it once `createReview.isSuccess`) rather than resetting to let the student post again — matches the backend's one-review-per-student constraint; showing an empty form after a successful post would invite a guaranteed `409` on the next attempt.
 
 ## Known Constraints / Deferred
-- **No pagination controls** — `useCourseReviews` accepts `page`/`limit` and the backend paginates, but `CourseReviews` always requests page 1, same deferred pattern `enrollment`/`certificates` already documented for their own lists.
+- ~~No pagination controls~~ **Closed**: `ReviewList` (not `CourseReviews` — it owns the query, so it owns the page state) now lifts `page` state and renders `shared/components/Pagination.tsx` beneath the review list.
 - **No edit/delete UI** — matches the backend, which has no such endpoints.
 - **No "already reviewed" indicator on reload**: if a student already reviewed a course, the form still renders on their next visit (no server-driven "you already reviewed this" state) — they only find out via the `409` toast if they try to submit again. Fixing this would need the same kind of "my submission for X" endpoint `assignments`' `context.md` already flagged as missing on the backend.

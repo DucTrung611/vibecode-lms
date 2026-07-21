@@ -1,12 +1,12 @@
 import { Button } from '@/shared/components/Button';
 import type { PaginationMeta } from '@/shared/types/api.types';
 
-interface CoursePaginationProps {
+interface PaginationProps {
   meta: PaginationMeta;
   onPageChange: (page: number) => void;
 }
 
-export function CoursePagination({ meta, onPageChange }: CoursePaginationProps) {
+export function Pagination({ meta, onPageChange }: PaginationProps) {
   const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
 
   if (totalPages <= 1) {

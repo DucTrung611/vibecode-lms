@@ -1,10 +1,13 @@
+import { useState } from 'react';
+import { Pagination } from '@/shared/components/Pagination';
 import { Skeleton } from '@/shared/components/Skeleton';
 import { NotificationList } from '../components/NotificationList';
 import { useMarkAsRead } from '../hooks/useMarkAsRead';
 import { useNotifications } from '../hooks/useNotifications';
 
 export default function NotificationsPage() {
-  const { data, isPending, isError } = useNotifications();
+  const [page, setPage] = useState(1);
+  const { data, isPending, isError } = useNotifications(page);
   const markAsRead = useMarkAsRead();
 
   return (
@@ -20,12 +23,15 @@ export default function NotificationsPage() {
       ) : isError ? (
         <p className="text-red-600">Could not load your notifications.</p>
       ) : (
-        <div className="rounded-lg border border-gray-200">
-          <NotificationList
-            items={data?.items ?? []}
-            onMarkAsRead={(id) => markAsRead.mutate(id)}
-          />
-        </div>
+        <>
+          <div className="rounded-lg border border-gray-200">
+            <NotificationList
+              items={data?.items ?? []}
+              onMarkAsRead={(id) => markAsRead.mutate(id)}
+            />
+          </div>
+          {data ? <Pagination meta={data.meta} onPageChange={setPage} /> : null}
+        </>
       )}
     </div>
   );

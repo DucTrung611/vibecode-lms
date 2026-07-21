@@ -29,4 +29,4 @@ All 4 backend endpoints are consumed.
 - ~~No discovery path from a course/lesson to an assignment~~ **Closed** on both sides now: `courses`' `CourseModuleList` links students to `/assignments/:id/submit`, and `ModuleEditorCard` links instructors to `/assignments/:id/submissions` (both use the backend's `Lesson.assignmentId` field, see backend `courses/context.md`).
 - ~~No submission-listing UI for instructors~~ **Closed**: `AssignmentSubmissionsPage`.
 - ~~No file upload~~ **Closed**: `SubmissionForm`'s `fileUrl` field now has a `shared/components/FileUploadButton.tsx` next to it, same pattern `identity`'s `ProfileForm` and `courses`' `CourseForm`/`AddLessonForm` use.
-- **No pagination controls on `AssignmentSubmissionsPage`** — same deferred pattern as every other list page in this codebase (`enrollment`/`reviews`/`certificates`/`notifications`/`payments`).
+- ~~No pagination controls on `AssignmentSubmissionsPage`~~ **Closed**: now lifts `page` state and renders `shared/components/Pagination.tsx`, same as every other list page in this codebase.
