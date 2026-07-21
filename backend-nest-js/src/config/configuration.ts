@@ -15,6 +15,7 @@ export const configValidationSchema = Joi.object({
 
   AI_PROVIDER_API_KEY: Joi.string().allow('').default(''),
   AI_PROVIDER_BASE_URL: Joi.string().uri().allow('').default(''),
+  AI_PROVIDER_MODEL: Joi.string().allow('').default('gpt-4o-mini'),
 
   STORAGE_DRIVER: Joi.string().valid('local', 's3').default('local'),
   STORAGE_LOCAL_PATH: Joi.string().default('./uploads'),
@@ -36,6 +37,7 @@ export interface AppConfig {
   ai: {
     apiKey: string;
     baseUrl: string;
+    model: string;
   };
   storage: {
     driver: 'local' | 's3';
@@ -59,6 +61,7 @@ export default (): AppConfig => ({
   ai: {
     apiKey: process.env.AI_PROVIDER_API_KEY ?? '',
     baseUrl: process.env.AI_PROVIDER_BASE_URL ?? '',
+    model: process.env.AI_PROVIDER_MODEL ?? 'gpt-4o-mini',
   },
   storage: {
     driver: (process.env.STORAGE_DRIVER as 'local' | 's3') ?? 'local',

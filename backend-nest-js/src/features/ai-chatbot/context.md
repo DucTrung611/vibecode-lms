@@ -12,19 +12,20 @@ Chat sessions (optionally scoped to a course) where a student's message gets a r
 | Method | Path | Status |
 |---|---|---|
 | POST | `/chat/sessions` | ✅ |
-| POST | `/chat/sessions/:id/messages` | ✅ (mocked retrieval + reply, see Design Decisions) |
+| POST | `/chat/sessions/:id/messages` | ✅ (real LLM reply when configured, keyword-retrieval fallback otherwise — see Design Decisions) |
 | GET | `/chat/sessions/:id` | ✅ |
 
 ## Public API (for other features to inject)
 - `ChatService` — exported via `AiChatbotModule.exports`. No other feature consumes it yet.
 
-This feature injects `CoursesService` (from `CoursesModule`) — never `CourseRepository` directly — to validate `courseId` when starting a course-scoped session.
+This feature injects `CoursesService` (from `CoursesModule`) — never `CourseRepository` directly — to validate `courseId` when starting a course-scoped session. It also injects `AiClientService` (from the global `CoreModule`, see `core/ai/ai-client.service.ts`) for the real completion path below.
 
 ## Design Decisions
-- **No real LLM call, no vector similarity search.** Unlike `quizzes`' `POST /lessons/:id/quizzes/generate` or `learning-paths`' `POST /learning-paths/generate` — both fully **deferred** because there is no AI provider client in this codebase (only unused placeholder `AI_PROVIDER_API_KEY`/`AI_PROVIDER_BASE_URL` config) — this feature's entire purpose *is* the AI reply, so deferring it would mean building nothing at all. Instead, `POST /chat/sessions/:id/messages` implements a genuinely working but deliberately primitive stand-in:
-  - **Retrieval** (`utils/retrieval.util.ts`): naive keyword-overlap scoring over the session's course's `document_chunks` — no embeddings, no vector store, consistent with `DATABASE.md`'s own framing of the JSON `embedding` column as an "MVP fallback" pending a real vector store.
-  - **Reply generation** (`utils/reply.util.ts`): a fixed template that lists the retrieved chunks' content (or a generic "I don't have specific course material" message if none matched) — not an LLM completion.
-  - Both are pure functions, fully unit-tested, with zero external calls. Revisit both the moment a real AI provider client exists (same trigger condition `quizzes`/`learning-paths` already name for their own deferred routes).
+- **Retrieval** (`utils/retrieval.util.ts`) is unchanged: naive keyword-overlap scoring over the session's course's `document_chunks` — no embeddings, no vector store, consistent with `DATABASE.md`'s own framing of the JSON `embedding` column as an "MVP fallback" pending a real vector store. This still runs regardless of whether a real AI provider is configured, since its output (`sourcesUsed`, and the fallback reply's content) is used either way.
+- **Reply generation now has two paths**, chosen by `ChatService.generateReply` at request time:
+  1. **Real LLM completion** (`AiClientService.complete`) when `AI_PROVIDER_API_KEY`/`AI_PROVIDER_BASE_URL` are configured — the retrieved chunks are joined into a system-prompt "use only this course material" instruction, and the student's message is sent as the user turn.
+  2. **Keyword-retrieval template** (`utils/reply.util.ts`, unchanged) — used when no provider is configured, *and* as a safety-net fallback if the configured provider call throws for any reason (network failure, non-2xx, empty response). The `sendMessage` request never fails outright just because the AI call failed; it degrades to the deterministic reply instead.
+  - This turns the previous "fully deferred, no AI client exists" situation `quizzes`/`learning-paths` still cite for their own generate routes into "implemented, verified against a mocked provider response; needs real `AI_PROVIDER_API_KEY`/`AI_PROVIDER_BASE_URL` credentials to exercise path 1 live" — nobody on this task had provider credentials to test against a live API, so path 1 is unverified end-to-end against a real provider, only against `AiClientService`'s own contract (which *is* unit-tested with a mocked `fetch`).
 - **Sessions with no `courseId` skip retrieval entirely** and always get the generic fallback reply — there's no course to search `document_chunks` against. `API_SPEC.md` allows `courseId` to be optional ("optionally scoped to a course"), so this is a valid, if low-value, path rather than a rejected request.
 - **`sourcesUsed` in the response is the retrieved chunks' IDs** — matches `API_SPEC.md` §7's exact example shape (`"sourcesUsed": ["chunk_12", "chunk_15"]`).
 - **No rate limiting**: `API_SPEC.md` §7 documents `429 CHAT_002` for "rate limit on AI calls exceeded," but there's no real AI provider being called, so nothing to rate-limit against yet — not implemented (see Known Constraints).

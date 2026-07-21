@@ -1,4 +1,5 @@
 import { ChatMessage, ChatSession, DocumentChunk } from '@prisma/client';
+import { AiClientService } from '../../../core/ai/ai-client.service';
 import { CoursesService } from '../../courses/services/courses.service';
 import { ApiException } from '../../../shared/types/api-error-code.type';
 import { ChatMessageRepository } from '../repositories/chat-message.repository';
@@ -16,6 +17,7 @@ describe('ChatService', () => {
     Pick<DocumentChunkRepository, 'findByCourseId'>
   >;
   let coursesService: jest.Mocked<Pick<CoursesService, 'findById'>>;
+  let aiClient: jest.Mocked<Pick<AiClientService, 'isConfigured' | 'complete'>>;
 
   const fakeSession: ChatSession = {
     id: 'session_1',
@@ -69,12 +71,17 @@ describe('ChatService', () => {
     coursesService = {
       findById: jest.fn(),
     };
+    aiClient = {
+      isConfigured: jest.fn().mockReturnValue(false),
+      complete: jest.fn(),
+    };
 
     service = new ChatService(
       sessionRepository as unknown as ChatSessionRepository,
       messageRepository as unknown as ChatMessageRepository,
       documentChunkRepository as unknown as DocumentChunkRepository,
       coursesService as unknown as CoursesService,
+      aiClient as unknown as AiClientService,
     );
   });
 
@@ -219,6 +226,57 @@ describe('ChatService', () => {
 
       expect(documentChunkRepository.findByCourseId).not.toHaveBeenCalled();
       expect(result.sourcesUsed).toEqual([]);
+    });
+
+    it('uses the AI provider for the reply when configured', async () => {
+      sessionRepository.findById.mockResolvedValue(fakeSession);
+      documentChunkRepository.findByCourseId.mockResolvedValue([relevantChunk]);
+      aiClient.isConfigured.mockReturnValue(true);
+      aiClient.complete.mockResolvedValue('A right triangle has a 90° angle.');
+      messageRepository.create
+        .mockResolvedValueOnce(fakeUserMessage)
+        .mockResolvedValueOnce({
+          ...fakeAssistantMessage,
+          content: 'A right triangle has a 90° angle.',
+        });
+
+      const result = await service.sendMessage('student_1', 'session_1', {
+        content: 'What is a right triangle?',
+      });
+
+      expect(aiClient.complete).toHaveBeenCalledWith([
+        {
+          role: 'system',
+          content: expect.stringContaining(
+            'A right triangle has one 90-degree angle.',
+          ) as string,
+        },
+        { role: 'user', content: 'What is a right triangle?' },
+      ]);
+      expect(result.content).toBe('A right triangle has a 90° angle.');
+    });
+
+    it('falls back to the keyword-retrieval reply when the AI provider call fails', async () => {
+      sessionRepository.findById.mockResolvedValue(fakeSession);
+      documentChunkRepository.findByCourseId.mockResolvedValue([relevantChunk]);
+      aiClient.isConfigured.mockReturnValue(true);
+      aiClient.complete.mockRejectedValue(
+        new ApiException(502, 'AI_002', 'AI provider request failed'),
+      );
+      messageRepository.create
+        .mockResolvedValueOnce(fakeUserMessage)
+        .mockResolvedValueOnce(fakeAssistantMessage);
+
+      const result = await service.sendMessage('student_1', 'session_1', {
+        content: 'What is a right triangle?',
+      });
+
+      expect(messageRepository.create).toHaveBeenNthCalledWith(2, {
+        sessionId: 'session_1',
+        role: 'ASSISTANT',
+        content: expect.stringContaining('right triangle') as string,
+      });
+      expect(result.content).toBe(fakeAssistantMessage.content);
     });
   });
 });

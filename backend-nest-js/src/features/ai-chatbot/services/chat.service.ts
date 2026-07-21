@@ -1,4 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { DocumentChunk } from '@prisma/client';
+import { AiClientService } from '../../../core/ai/ai-client.service';
 import { ApiException } from '../../../shared/types/api-error-code.type';
 import { CoursesService } from '../../courses/services/courses.service';
 import { CreateChatSessionDto } from '../dto/create-chat-session.dto';
@@ -26,6 +28,7 @@ export class ChatService {
     private readonly messageRepository: ChatMessageRepository,
     private readonly documentChunkRepository: DocumentChunkRepository,
     private readonly coursesService: CoursesService,
+    private readonly aiClient: AiClientService,
   ) {}
 
   async createSession(
@@ -98,7 +101,7 @@ export class ChatService {
     const assistantMessage = await this.messageRepository.create({
       sessionId,
       role: 'ASSISTANT',
-      content: buildAssistantReply(chunks),
+      content: await this.generateReply(dto.content, chunks),
     });
 
     this.logger.log(
@@ -111,5 +114,32 @@ export class ChatService {
       content: assistantMessage.content,
       sourcesUsed: chunks.map((chunk) => chunk.id),
     };
+  }
+
+  private async generateReply(
+    userMessage: string,
+    chunks: DocumentChunk[],
+  ): Promise<string> {
+    if (!this.aiClient.isConfigured()) {
+      return buildAssistantReply(chunks);
+    }
+
+    try {
+      const context = chunks.map((chunk) => chunk.content).join('\n\n');
+      const systemPrompt = context
+        ? `You are a helpful course assistant. Answer using only this course material when relevant; if it doesn't cover the question, say so.\n\n${context}`
+        : 'You are a helpful course assistant.';
+
+      return await this.aiClient.complete([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage },
+      ]);
+    } catch (error) {
+      this.logger.error(
+        'AI completion failed, falling back to keyword-retrieval reply',
+        error instanceof Error ? error.stack : String(error),
+      );
+      return buildAssistantReply(chunks);
+    }
   }
 }
