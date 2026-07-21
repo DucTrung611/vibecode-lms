@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import { RootLayout } from '@/app/layout/RootLayout';
 import { chatRoutes } from '@/features/ai-chatbot';
 import { assignmentRoutes } from '@/features/assignments';
 import { certificateRoutes } from '@/features/certificates';
@@ -14,17 +15,27 @@ import { quizRoutes } from '@/features/quizzes';
 // Each feature exports its route objects from its `pages/` folder.
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: <div className="p-8 text-center text-gray-500">Coming soon</div>,
+    // Pathless layout route: contributes no path segment, so children below
+    // keep their own absolute-looking paths unchanged while still rendering
+    // inside <RootLayout>'s persistent <Header />.
+    element: <RootLayout />,
+    children: [
+      {
+        path: '/',
+        element: (
+          <div className="p-8 text-center text-gray-500">Coming soon</div>
+        ),
+      },
+      ...identityRoutes,
+      ...coursesRoutes,
+      ...enrollmentRoutes,
+      ...quizRoutes,
+      ...assignmentRoutes,
+      ...certificateRoutes,
+      ...notificationRoutes,
+      ...paymentRoutes,
+      ...learningPathRoutes,
+      ...chatRoutes,
+    ],
   },
-  ...identityRoutes,
-  ...coursesRoutes,
-  ...enrollmentRoutes,
-  ...quizRoutes,
-  ...assignmentRoutes,
-  ...certificateRoutes,
-  ...notificationRoutes,
-  ...paymentRoutes,
-  ...learningPathRoutes,
-  ...chatRoutes,
 ]);
