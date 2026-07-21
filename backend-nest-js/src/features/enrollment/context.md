@@ -17,7 +17,7 @@ Student enrollment in courses and per-lesson progress tracking, including automa
 All 3 endpoints implemented — nothing skipped. `POST /courses/:id/enroll` lives under the `courses` URL path per spec but is owned/implemented by this feature (`EnrollController`), the same split pattern `courses` itself uses for `ModulesController`.
 
 ## Public API (for other features to inject)
-- `EnrollmentService` — exported via `EnrollmentModule.exports`. No other feature consumes it yet, but `quizzes`/`assignments` will need it later to verify "enrolled student" auth (per `API_SPEC.md`'s `Auth: Enrolled student` column) — expect a method like `isEnrolled(studentId, courseId): Promise<boolean>` to be added when that feature is built; not added preemptively here (YAGNI).
+- `EnrollmentService` — exported via `EnrollmentModule.exports`. `isEnrolled(studentId, courseId): Promise<boolean>` was added for `quizzes` to verify "enrolled student" auth (per `API_SPEC.md`'s `Auth: Enrolled student` column); `assignments`/`reviews` will likely need the same when built.
 
 This feature injects `CoursesService` (from `CoursesModule`, imported in `EnrollmentModule`) — never `CourseRepository` directly.
 
@@ -26,6 +26,7 @@ This feature injects `CoursesService` (from `CoursesModule`, imported in `Enroll
 - **Enroll response shape**: `API_SPEC.md` §7 documents `POST /courses/:id/enroll` returning `{ enrollmentId, status }` (not the generic `{ id, ... }` shape other entities use) — the controller maps `EnrollmentEntity` to that exact shape rather than changing the entity's field names app-wide.
 - **Progress upsert**: `PATCH /enrollments/:id/progress` upserts a `LessonProgress` row keyed on `(enrollmentId, lessonId)` — first call for a given lesson creates it (default status `IN_PROGRESS` if omitted), later calls update in place. `lessonId` is validated against the enrolled course's actual lessons (via `CoursesService.findById`) — a lesson from a different course is rejected with `ENROLLMENT_003`, not silently accepted.
 - **Auto-completion**: after every progress upsert, the service recomputes whether *all* of the course's lessons now have a `COMPLETED` `LessonProgress` row for this enrollment; if so, the enrollment itself flips to `COMPLETED` with `completedAt` set. This is monotonic in this MVP — un-completing a lesson afterward does not revert an already-completed enrollment (deliberately simple; revisit if a real requirement for "resume mid-course" reappears).
+- **`enrollment.completed` domain event**: the moment `maybeCompleteEnrollment` flips an enrollment to `COMPLETED`, it emits `enrollment.completed` (`shared/events/enrollment-completed.event.ts`) via `EventEmitter2`, which `certificates` listens for to issue a `Certificate` — the exact flow `BE-ARCHITECTURE.md` §5 uses as its worked example. `maybeCompleteEnrollment` now short-circuits if `enrollment.status` is already `COMPLETED`, both to avoid a redundant `UPDATE` and, more importantly, to avoid re-emitting the event on every subsequent progress call after a course is already done.
 - **Ownership check**: `PATCH /enrollments/:id/progress` verifies `enrollment.studentId === currentUser.id` in the service layer (same pattern as `courses`' instructor-ownership check) — `RolesGuard` only confirms the caller is a `STUDENT`, not that they own *this* enrollment.
 - **No `create-enrollment.dto.ts`**: `POST /courses/:id/enroll` takes no request body (`courseId` from the route param, `studentId` from the JWT) — the usual anatomy's DTO pair didn't apply here.
 
@@ -41,5 +42,4 @@ Reuses `ENROLLMENT_001` (409, already-enrolled — already in `API_SPEC.md` §5)
 
 ## Known Constraints / Deferred
 - No "unenroll" endpoint — not in `API_SPEC.md` for this phase.
-- No certificate issuance on completion — that's the `certificates` feature's job (via a domain event later, per `BE-ARCHITECTURE.md` §5's `enrollment.completed` example); not wired here since `certificates` doesn't exist yet.
 - No tests yet for this feature — deferred to the same follow-up pass as `courses`.

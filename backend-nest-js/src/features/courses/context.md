@@ -26,6 +26,7 @@ All 7 endpoints implemented — nothing skipped.
 
 ## Public API (for other features to inject)
 - `CoursesService` — exported via `CoursesModule.exports`. Relevant methods for other features (e.g. `enrollment` verifying a course exists/is published): `findById(id): Promise<CourseEntity>` (throws `COURSE_004` if missing/soft-deleted).
+- `findCourseIdByLessonId(lessonId): Promise<string>` (throws `COURSE_007` if the lesson doesn't exist) — added for `quizzes` to resolve a `Quiz.lessonId` up to its owning course so it can check enrollment via `EnrollmentService.isEnrolled`.
 
 Other features must inject `CoursesService` — never `CourseRepository`/`ModuleRepository`/`LessonRepository` directly.
 
@@ -44,6 +45,7 @@ Reuses `COURSE_004` (404, course not found) and `AUTH_003` (403, reused for owne
 |---|---|---|
 | `COURSE_005` | 404 | Category not found (invalid `categoryId` on create/update) |
 | `COURSE_006` | 404 | Module not found (`POST /modules/:id/lessons` with a bad `:id`) |
+| `COURSE_007` | 404 | Lesson not found (`findCourseIdByLessonId` given a bad lesson id) |
 
 `share-docs/API_SPEC.md` §5 should be updated to include these the next time it's revised.
 

@@ -61,6 +61,14 @@ export class CoursesService {
     return CourseEntity.fromPrisma(course);
   }
 
+  async findCourseIdByLessonId(lessonId: string): Promise<string> {
+    const lesson = await this.lessonRepository.findCourseIdById(lessonId);
+    if (!lesson) {
+      throw new ApiException(404, 'COURSE_007', 'Lesson not found');
+    }
+    return lesson.module.courseId;
+  }
+
   async create(
     instructorId: string,
     dto: CreateCourseDto,

@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { EnrollButton } from '@/features/enrollment';
+import { CourseReviews } from '@/features/reviews';
 import { Skeleton } from '@/shared/components/Skeleton';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { CourseModuleList } from '../components/CourseModuleList';
@@ -65,6 +66,8 @@ export default function CourseDetailPage() {
         <h2 className="mb-3 text-lg font-semibold text-gray-900">Content</h2>
         <CourseModuleList modules={course.modules ?? []} />
       </div>
+
+      <CourseReviews courseId={course.id} />
     </div>
   );
 }

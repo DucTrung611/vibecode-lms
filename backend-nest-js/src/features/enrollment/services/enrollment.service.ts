@@ -1,5 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Enrollment } from '@prisma/client';
 import { CoursesService } from '../../courses/services/courses.service';
+import {
+  ENROLLMENT_COMPLETED_EVENT,
+  EnrollmentCompletedEvent,
+} from '../../../shared/events/enrollment-completed.event';
 import { ApiException } from '../../../shared/types/api-error-code.type';
 import { PaginatedResult } from '../../../shared/types/paginated-result.type';
 import {
@@ -21,6 +27,7 @@ export class EnrollmentService {
     private readonly enrollmentRepository: EnrollmentRepository,
     private readonly lessonProgressRepository: LessonProgressRepository,
     private readonly coursesService: CoursesService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async enroll(studentId: string, courseId: string): Promise<EnrollmentEntity> {
@@ -53,6 +60,14 @@ export class EnrollmentService {
 
     this.logger.log(`Student ${studentId} enrolled in course ${courseId}`);
     return EnrollmentEntity.fromPrisma(enrollment);
+  }
+
+  async isEnrolled(studentId: string, courseId: string): Promise<boolean> {
+    const enrollment = await this.enrollmentRepository.findByStudentAndCourse(
+      studentId,
+      courseId,
+    );
+    return enrollment !== null;
   }
 
   async findMyEnrollments(
@@ -119,26 +134,33 @@ export class EnrollmentService {
       },
     );
 
-    await this.maybeCompleteEnrollment(enrollment.id, allLessonIds);
+    await this.maybeCompleteEnrollment(enrollment, allLessonIds);
 
     return LessonProgressEntity.fromPrisma(progress);
   }
 
   private async maybeCompleteEnrollment(
-    enrollmentId: string,
+    enrollment: Enrollment,
     allLessonIds: string[],
   ): Promise<void> {
-    if (allLessonIds.length === 0) {
+    if (allLessonIds.length === 0 || enrollment.status === 'COMPLETED') {
       return;
     }
 
     const completedIds =
-      await this.lessonProgressRepository.findCompletedLessonIds(enrollmentId);
+      await this.lessonProgressRepository.findCompletedLessonIds(enrollment.id);
     const completedSet = new Set(completedIds);
     const allCompleted = allLessonIds.every((id) => completedSet.has(id));
 
     if (allCompleted) {
-      await this.enrollmentRepository.markCompleted(enrollmentId);
+      await this.enrollmentRepository.markCompleted(enrollment.id);
+
+      const event: EnrollmentCompletedEvent = {
+        enrollmentId: enrollment.id,
+        studentId: enrollment.studentId,
+        courseId: enrollment.courseId,
+      };
+      this.eventEmitter.emit(ENROLLMENT_COMPLETED_EVENT, event);
     }
   }
 }

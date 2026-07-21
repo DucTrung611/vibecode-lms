@@ -1,5 +1,7 @@
 import { Enrollment } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CoursesService } from '../../courses/services/courses.service';
+import { ENROLLMENT_COMPLETED_EVENT } from '../../../shared/events/enrollment-completed.event';
 import { ApiException } from '../../../shared/types/api-error-code.type';
 import { EnrollmentRepository } from '../repositories/enrollment.repository';
 import { LessonProgressRepository } from '../repositories/lesson-progress.repository';
@@ -21,6 +23,7 @@ describe('EnrollmentService', () => {
     Pick<LessonProgressRepository, 'upsert' | 'findCompletedLessonIds'>
   >;
   let coursesService: jest.Mocked<Pick<CoursesService, 'findById'>>;
+  let eventEmitter: jest.Mocked<Pick<EventEmitter2, 'emit'>>;
 
   const fakeEnrollment: Enrollment = {
     id: 'enr_1',
@@ -57,11 +60,15 @@ describe('EnrollmentService', () => {
     coursesService = {
       findById: jest.fn(),
     };
+    eventEmitter = {
+      emit: jest.fn(),
+    };
 
     service = new EnrollmentService(
       enrollmentRepository as unknown as EnrollmentRepository,
       lessonProgressRepository as unknown as LessonProgressRepository,
       coursesService as unknown as CoursesService,
+      eventEmitter as unknown as EventEmitter2,
     );
   });
 
@@ -263,6 +270,33 @@ describe('EnrollmentService', () => {
       await service.updateProgress('student_1', 'enr_1', dto);
 
       expect(enrollmentRepository.markCompleted).toHaveBeenCalledWith('enr_1');
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        ENROLLMENT_COMPLETED_EVENT,
+        {
+          enrollmentId: 'enr_1',
+          studentId: 'student_1',
+          courseId: 'course_1',
+        },
+      );
+    });
+
+    it('does not re-mark or re-emit when the enrollment is already COMPLETED', async () => {
+      enrollmentRepository.findById.mockResolvedValue({
+        ...fakeEnrollment,
+        status: 'COMPLETED',
+      });
+      coursesService.findById.mockResolvedValue(courseWithLessons() as never);
+      lessonProgressRepository.upsert.mockResolvedValue({
+        id: 'progress_1',
+      } as never);
+
+      await service.updateProgress('student_1', 'enr_1', dto);
+
+      expect(
+        lessonProgressRepository.findCompletedLessonIds,
+      ).not.toHaveBeenCalled();
+      expect(enrollmentRepository.markCompleted).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
     });
 
     it('does not mark the enrollment completed while lessons remain incomplete', async () => {

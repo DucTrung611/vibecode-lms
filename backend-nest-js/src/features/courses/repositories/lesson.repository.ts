@@ -23,4 +23,13 @@ export class LessonRepository {
   create(data: CreateLessonData): Promise<Lesson> {
     return this.prisma.lesson.create({ data });
   }
+
+  findCourseIdById(
+    id: string,
+  ): Promise<{ module: { courseId: string } } | null> {
+    return this.prisma.lesson.findUnique({
+      where: { id },
+      select: { module: { select: { courseId: true } } },
+    });
+  }
 }
