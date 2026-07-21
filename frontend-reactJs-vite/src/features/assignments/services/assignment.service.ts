@@ -11,6 +11,14 @@ export const assignmentService = {
   getById: (id: string) =>
     api.get<ApiSuccess<Assignment>>(`/assignments/${id}`).then(unwrap),
 
+  listSubmissions: async (assignmentId: string, page: number, limit: number) => {
+    const response = await api.get<ApiSuccess<AssignmentSubmission[]>>(
+      `/assignments/${assignmentId}/submissions`,
+      { params: { page, limit } },
+    );
+    return { items: response.data.data, meta: response.data.meta! };
+  },
+
   submit: (assignmentId: string, payload: CreateSubmissionPayload) =>
     api
       .post<ApiSuccess<AssignmentSubmission>>(

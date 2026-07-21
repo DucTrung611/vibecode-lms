@@ -20,6 +20,7 @@ export interface AssignmentSubmission {
   feedback: string | null;
   gradedById: string | null;
   gradedAt: string | null;
+  student?: { id: string; fullName: string };
 }
 
 export interface CreateSubmissionPayload {

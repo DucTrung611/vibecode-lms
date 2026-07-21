@@ -5,6 +5,9 @@ import { ProtectedRoute } from '@/app/routes/ProtectedRoute';
 import { Skeleton } from '@/shared/components/Skeleton';
 
 const AssignmentSubmitPage = lazy(() => import('./AssignmentSubmitPage'));
+const AssignmentSubmissionsPage = lazy(
+  () => import('./AssignmentSubmissionsPage'),
+);
 const GradeSubmissionPage = lazy(() => import('./GradeSubmissionPage'));
 
 function PageFallback() {
@@ -23,6 +26,16 @@ export const assignmentRoutes: RouteObject[] = [
       <ProtectedRoute role="STUDENT">
         <Suspense fallback={<PageFallback />}>
           <AssignmentSubmitPage />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/assignments/:id/submissions',
+    element: (
+      <ProtectedRoute role="INSTRUCTOR">
+        <Suspense fallback={<PageFallback />}>
+          <AssignmentSubmissionsPage />
         </Suspense>
       </ProtectedRoute>
     ),

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { CourseModule, LessonFormValues } from '../types/courses.types';
 import { AddLessonForm } from './AddLessonForm';
 
@@ -22,6 +23,14 @@ export function ModuleEditorCard({
             <li key={lesson.id} className="text-sm text-gray-700">
               {lesson.title}{' '}
               <span className="text-xs text-gray-500">({lesson.type})</span>
+              {lesson.assignmentId ? (
+                <Link
+                  to={`/assignments/${lesson.assignmentId}/submissions`}
+                  className="ml-2 text-xs font-medium text-purple-600 hover:underline"
+                >
+                  View submissions
+                </Link>
+              ) : null}
             </li>
           ))}
         </ul>
