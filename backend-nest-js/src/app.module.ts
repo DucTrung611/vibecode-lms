@@ -16,6 +16,7 @@ import { NotificationsModule } from './features/notifications/notifications.modu
 import { PaymentsModule } from './features/payments/payments.module';
 import { QuizzesModule } from './features/quizzes/quizzes.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
+import { UploadsModule } from './features/uploads/uploads.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ReviewsModule } from './features/reviews/reviews.module';
     PaymentsModule,
     LearningPathsModule,
     AiChatbotModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

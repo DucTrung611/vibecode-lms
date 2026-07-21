@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# Uploaded files (local storage driver)
+/uploads
+
 # Logs
 logs
 *.log
