@@ -41,6 +41,14 @@ interface AddLessonPayload {
   durationSec?: number;
 }
 
+interface UpdateLessonPayload {
+  title?: string;
+  type?: LessonType;
+  videoUrl?: string;
+  content?: string;
+  durationSec?: number;
+}
+
 export const coursesService = {
   list: async (filters: CourseListFilters) => {
     const response = await api.get<ApiSuccess<Course[]>>('/courses', {
@@ -69,4 +77,7 @@ export const coursesService = {
     api
       .post<ApiSuccess<Lesson>>(`/modules/${moduleId}/lessons`, dto)
       .then(unwrap),
+
+  updateLesson: (id: string, dto: UpdateLessonPayload) =>
+    api.patch<ApiSuccess<Lesson>>(`/lessons/${id}`, dto).then(unwrap),
 };

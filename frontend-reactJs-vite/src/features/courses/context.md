@@ -13,6 +13,7 @@ Public course catalog/detail, a lesson viewer for enrolled students, plus instru
 | DELETE | `/courses/:id` | `useDeleteCourse` |
 | POST | `/courses/:id/modules` | `useAddModule` |
 | POST | `/modules/:id/lessons` | `useAddLesson` |
+| PATCH | `/lessons/:id` | `useUpdateLesson` |
 | GET | `/categories` | `useCategories` |
 | POST | `/categories` | `useCreateCategory` |
 
@@ -21,7 +22,8 @@ All 7 endpoints from `API_SPEC.md` §Courses are consumed, plus the backend's ne
 ## Public API (via `index.ts`)
 - `coursesRoutes` — consumed by `app/routes/router.tsx`
 - `useCourse`, `useCourses` — for other features that need to read course data (e.g. `enrollment` will want `useCourse(courseId)` to show what a student is enrolling in)
-- Types: `Course`, `CourseListFilters`, `CourseModule`, `Lesson`
+- `CourseCard` — now exported for the `instructors` feature's storefront course grid to reuse.
+- Types: `Course`, `CourseInstructorSummary`, `CourseListFilters`, `CourseModule`, `Lesson`
 
 `useCategories`/`useCreateCategory` are **not** exported — only `CourseForm` (category picker + inline create) and `CourseFilters` (category filter) use them, both within this feature.
 
@@ -34,6 +36,7 @@ All 7 endpoints from `API_SPEC.md` §Courses are consumed, plus the backend's ne
 - **`useCategories` uses `staleTime: 5 * 60_000`** (5 minutes) — matches `FE-ARCHITECTURE.md` §7's own example of "rarely-changing data (categories)" verbatim.
 - **Ownership-gated edit UI**: `CourseDetailPage` only shows an "Edit course" link when `useAuthStore().user.id === course.instructorId`; `InstructorCourseEditPage` redirects home if the loaded course isn't owned by the current user (defense in depth — the backend enforces this regardless).
 - **`order` for modules/lessons**: omitted from the add-module/add-lesson forms entirely; the backend auto-assigns the next order when omitted (see backend `courses/context.md`), so the UI doesn't need manual ordering yet (drag-to-reorder would be a separate future task).
+- **`EditLessonForm` is a separate component from `AddLessonForm`**, not a `mode: 'create' | 'edit'` prop the way `CourseForm` handles both cases — `AddLessonForm` resets and stays open after submit (built for rapid multi-add), while editing needs an in-place form that pre-fills from an existing lesson and closes itself on Save/Cancel; folding both interaction shapes into one component would mean threading extra conditionals through `AddLessonForm.spec.tsx`'s already-covered behavior for no real reuse win (the two components share field markup, not the surrounding UX). `ModuleEditorCard` owns a single `editingLessonId` piece of local state and swaps one lesson `<li>` for `<EditLessonForm>` when it matches — the rest of the list stays in its normal read view.
 - **`LessonPage` resolves the caller's `enrollmentId` by scanning `useMyEnrollments()`** for an entry matching the route's `courseId`, rather than the backend exposing a "my enrollment for course X" lookup — `PATCH /enrollments/:id/progress` needs an `enrollmentId`, not a `courseId`, and no such single-lookup endpoint exists in `API_SPEC.md`. Same tradeoff `useMyEnrollments`'s own un-paginated "always page 1" limitation already accepts: fine until a student has enough enrollments that page 1 doesn't contain the one they're viewing.
 - **`CourseModuleList` now links each lesson to `/courses/:courseId/lessons/:lessonId`**, plus a "Take quiz"/"View assignment" link when `Lesson.quizId`/`assignmentId` is set (from the backend's new discovery fields, see backend `courses/context.md`) — closes the gap `quizzes`'/`assignments`' own `context.md` files flagged: "no discovery path from a course/lesson to a quiz/assignment."
 - **`ModuleEditorCard` (instructor's course-edit view) also links `assignmentId`**, to `/assignments/:id/submissions` — the instructor-side counterpart to `CourseModuleList`'s student-facing "View assignment" link, closing `assignments`' own "instructor has no way to discover this page" gap.
@@ -44,6 +47,7 @@ All 7 endpoints from `API_SPEC.md` §Courses are consumed, plus the backend's ne
 ## Assumptions About Response Shapes
 - `GET /courses` returns the paginated envelope (`data: Course[]`, `meta: {page, limit, total}`) — `coursesService.list` reads `response.data.meta` directly instead of the shared `unwrap()` helper, since `unwrap()` intentionally discards `meta`.
 - `GET /courses/:id` embeds `modules[].lessons[]` in one response (per `API_SPEC.md`'s "Course detail with modules/lessons") — no separate lesson-fetching call is made.
+- `GET /courses/:id` now also optionally embeds `instructor: {id, fullName, avatarUrl}` (added for the `instructors` storefront feature) — `CourseHero` renders a "By <name>" byline linking to `/instructors/:id` when present. `GET /courses` (the catalog list) does **not** include this field; only the detail endpoint does.
 
 ## Shared-layer changes made while building this feature
 - Extended `app/routes/ProtectedRoute.tsx` with an optional `role` prop (previously only checked `isAuthenticated`) — implements the "role-gated sub-trees ... check `user.role`" pattern `FE-ARCHITECTURE.md` §6 already describes but that hadn't been built yet. Used here for `/instructor/courses/*`.
