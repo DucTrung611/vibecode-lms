@@ -13,7 +13,7 @@ Builds on `DATABASE.md` (entities) and `ARCHITECTURE.md` (controller/service/rep
 - **Method**: JWT (access + refresh), backed by the `refresh_tokens` table.
 - **Header format**: `Authorization: Bearer <access_token>`
 - **Token flow**:
-  1. `POST /auth/login` → returns `accessToken` (15 min TTL) + `refreshToken` (7 days TTL, hashed and stored in `refresh_tokens`).
+  1. `POST /auth/login` → returns `accessToken` (1 day TTL) + `refreshToken` (7 days TTL, hashed and stored in `refresh_tokens`).
   2. Client sends `accessToken` on every request.
   3. On 401 due to expiry, client calls `POST /auth/refresh` with `refreshToken` → gets a new token pair (rotation: old refresh token is revoked).
   4. `POST /auth/logout` revokes the current refresh token.

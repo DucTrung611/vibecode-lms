@@ -9,7 +9,7 @@ export const configValidationSchema = Joi.object({
   DATABASE_URL: Joi.string().uri().required(),
 
   JWT_ACCESS_SECRET: Joi.string().min(16).required(),
-  JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
+  JWT_ACCESS_EXPIRES_IN: Joi.string().default('1d'),
   JWT_REFRESH_SECRET: Joi.string().min(16).required(),
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
 
@@ -54,7 +54,7 @@ export default (): AppConfig => ({
   },
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET as string,
-    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
+    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '1d',
     refreshSecret: process.env.JWT_REFRESH_SECRET as string,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
   },
