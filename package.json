@@ -1,0 +1,12 @@
+{
+  "name": "vibecode-lms",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "npm run start:dev --prefix backend-nest-js",
+    "dev:frontend": "npm run dev --prefix frontend-reactJs-vite"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
