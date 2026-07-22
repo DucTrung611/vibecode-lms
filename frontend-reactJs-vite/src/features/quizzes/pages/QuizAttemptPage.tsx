@@ -20,7 +20,7 @@ export default function QuizAttemptPage() {
 
   if (isPending) {
     return (
-      <div className="mx-auto max-w-2xl space-y-4 px-4 py-12">
+      <div className="mx-auto max-w-2xl space-y-4">
         <Skeleton className="h-8 w-2/3" />
         <Skeleton className="h-40 w-full" />
       </div>
@@ -29,14 +29,16 @@ export default function QuizAttemptPage() {
 
   if (isError || !quiz) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-12">
-        <p className="text-center text-red-600">Could not load this quiz.</p>
+      <div className="mx-auto max-w-2xl rounded-card border border-danger-500/30 bg-danger-50 p-6 text-center dark:bg-danger-500/10">
+        <p className="text-sm font-medium text-danger-700 dark:text-danger-500">
+          Could not load this quiz.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12">
+    <div className="mx-auto max-w-2xl">
       {submitAttempt.isSuccess ? (
         <QuizResult result={submitAttempt.data} onRetake={reset} />
       ) : attemptId ? (

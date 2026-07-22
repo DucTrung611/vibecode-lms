@@ -17,7 +17,7 @@ export function VerifyCodeForm({ onSubmit }: VerifyCodeFormProps) {
           onSubmit(trimmed);
         }
       }}
-      className="mt-4 flex gap-2"
+      className="mt-6 flex flex-col gap-3 sm:flex-row"
     >
       <label htmlFor="certificate-code" className="sr-only">
         Certificate code
@@ -27,9 +27,11 @@ export function VerifyCodeForm({ onSubmit }: VerifyCodeFormProps) {
         value={code}
         onChange={(e) => setCode(e.target.value)}
         placeholder="Certificate code"
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+        className="w-full rounded-control border border-slate-300 bg-surface-0 px-3 py-2 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
       />
-      <Button type="submit">Verify</Button>
+      <Button type="submit" className="shrink-0">
+        Verify
+      </Button>
     </form>
   );
 }

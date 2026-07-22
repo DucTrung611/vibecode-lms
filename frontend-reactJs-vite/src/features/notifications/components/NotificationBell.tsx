@@ -33,7 +33,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative rounded-full p-2 text-gray-600 hover:bg-gray-100"
+        className="relative rounded-pill p-2 text-slate-600 transition-colors hover:bg-surface-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-slate-300 dark:hover:bg-slate-800"
         aria-label="Notifications"
       >
         <svg
@@ -51,14 +51,14 @@ export function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-pill bg-danger-600 px-1 text-[10px] font-semibold text-white ring-2 ring-white dark:ring-slate-950">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         ) : null}
       </button>
 
       {isOpen ? (
-        <div className="absolute right-0 z-10 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute right-0 z-10 mt-2 w-80 overflow-hidden rounded-card border border-slate-200 bg-white shadow-popover dark:border-slate-800 dark:bg-slate-900">
           <NotificationList
             items={data?.items ?? []}
             onMarkAsRead={(id) => markAsRead.mutate(id)}
@@ -66,7 +66,7 @@ export function NotificationBell() {
           <Link
             to="/notifications"
             onClick={() => setIsOpen(false)}
-            className="block border-t border-gray-100 px-4 py-2 text-center text-sm font-medium text-blue-600 hover:bg-gray-50"
+            className="block border-t border-slate-100 px-4 py-2 text-center text-sm font-medium text-brand-600 transition-colors hover:bg-surface-50 dark:border-slate-800 dark:text-brand-400 dark:hover:bg-slate-800"
           >
             View all
           </Link>

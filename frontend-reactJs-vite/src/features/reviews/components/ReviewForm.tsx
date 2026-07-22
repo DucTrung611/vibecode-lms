@@ -26,34 +26,41 @@ export function ReviewForm({ isPending, onSubmit }: ReviewFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       <div>
-        <span className="block text-sm font-medium text-gray-700">
+        <span className="block text-sm font-medium text-slate-700 dark:text-slate-300">
           Your rating
         </span>
-        <Controller
-          control={control}
-          name="rating"
-          render={({ field }) => (
-            <StarRating rating={field.value} onChange={field.onChange} />
-          )}
-        />
+        <div className="mt-1.5">
+          <Controller
+            control={control}
+            name="rating"
+            render={({ field }) => (
+              <StarRating rating={field.value} onChange={field.onChange} />
+            )}
+          />
+        </div>
         {errors.rating && (
-          <p className="mt-1 text-sm text-red-600">{errors.rating.message}</p>
+          <p className="mt-1 text-sm text-danger-600 dark:text-danger-500">
+            {errors.rating.message}
+          </p>
         )}
       </div>
 
       <div>
-        <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="comment"
+          className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+        >
           Comment (optional)
         </label>
         <textarea
           id="comment"
           rows={3}
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="mt-1.5 w-full rounded-control border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
           {...register('comment')}
         />
       </div>
 
-      <Button type="submit" disabled={isPending}>
+      <Button type="submit" loading={isPending} disabled={isPending}>
         {isPending ? 'Posting…' : 'Post review'}
       </Button>
     </form>

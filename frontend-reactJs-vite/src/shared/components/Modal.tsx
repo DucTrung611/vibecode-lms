@@ -11,15 +11,22 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
       onClick={onClose}
+      role="presentation"
     >
       <div
-        className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900"
+        className="w-full max-w-md rounded-card border border-slate-200 bg-white p-6 shadow-popover dark:border-slate-800 dark:bg-slate-900"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
       >
         {title && (
-          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h2
+            id="modal-title"
+            className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100"
+          >
             {title}
           </h2>
         )}

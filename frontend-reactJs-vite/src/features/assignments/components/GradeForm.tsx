@@ -28,33 +28,46 @@ export function GradeForm({ isPending, onSubmit }: GradeFormProps) {
       noValidate
     >
       <div>
-        <label htmlFor="score" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="score"
+          className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+        >
           Score
         </label>
         <input
           id="score"
           type="number"
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="mt-1.5 w-full rounded-control border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           {...register('score', { valueAsNumber: true })}
         />
         {errors.score && (
-          <p className="mt-1 text-sm text-red-600">{errors.score.message}</p>
+          <p className="mt-1.5 text-sm text-danger-600 dark:text-danger-500">
+            {errors.score.message}
+          </p>
         )}
       </div>
 
       <div>
-        <label htmlFor="feedback" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="feedback"
+          className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+        >
           Feedback
         </label>
         <textarea
           id="feedback"
           rows={4}
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="mt-1.5 w-full rounded-control border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           {...register('feedback')}
         />
       </div>
 
-      <Button type="submit" disabled={isPending}>
+      <Button
+        type="submit"
+        className="w-full sm:w-auto"
+        disabled={isPending}
+        loading={isPending}
+      >
         {isPending ? 'Saving…' : 'Save grade'}
       </Button>
     </form>

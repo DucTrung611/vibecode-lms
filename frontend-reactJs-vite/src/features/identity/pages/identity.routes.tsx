@@ -10,10 +10,12 @@ const ProfilePage = lazy(() => import('./ProfilePage'));
 
 function PageFallback() {
   return (
-    <div className="mx-auto max-w-sm space-y-3 px-4 py-12">
-      <Skeleton className="h-8 w-1/2" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
+    <div className="mx-auto w-full max-w-sm py-10 sm:py-16">
+      <div className="space-y-4 rounded-card border border-slate-200 bg-white p-6 shadow-card dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+        <Skeleton className="h-8 w-1/2" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
     </div>
   );
 }

@@ -8,9 +8,10 @@ const MyEnrollmentsPage = lazy(() => import('./MyEnrollmentsPage'));
 
 function PageFallback() {
   return (
-    <div className="mx-auto max-w-3xl space-y-3 px-4 py-12">
+    <div className="mx-auto max-w-3xl space-y-3">
       <Skeleton className="h-8 w-1/2" />
-      <Skeleton className="h-20 w-full" />
+      <Skeleton className="h-20 w-full rounded-card" />
+      <Skeleton className="h-20 w-full rounded-card" />
     </div>
   );
 }

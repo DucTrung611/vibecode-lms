@@ -22,7 +22,7 @@ export default function InstructorCourseEditPage() {
 
   if (isPending) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 px-4 py-12">
+      <div className="mx-auto max-w-lg space-y-4">
         <Skeleton className="h-8 w-1/2" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
@@ -32,8 +32,8 @@ export default function InstructorCourseEditPage() {
 
   if (isError || !course) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-12">
-        <p className="text-center text-red-600">
+      <div className="mx-auto max-w-lg rounded-card border border-danger-200 bg-danger-50 px-4 py-10 text-center dark:border-danger-500/30 dark:bg-danger-500/10">
+        <p className="text-sm font-medium text-danger-700 dark:text-danger-400">
           Could not load this course. It may not exist.
         </p>
       </div>
@@ -45,13 +45,14 @@ export default function InstructorCourseEditPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-10 px-4 py-12">
+    <div className="mx-auto max-w-lg space-y-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Edit course</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          Edit course
+        </h1>
         <Button
-          variant="ghost"
-          className="text-red-600 hover:bg-red-50"
-          disabled={deleteCourse.isPending}
+          variant="danger"
+          loading={deleteCourse.isPending}
           onClick={() => {
             if (confirm('Delete this course? This cannot be undone.')) {
               deleteCourse.mutate(course.id);
@@ -70,7 +71,9 @@ export default function InstructorCourseEditPage() {
       />
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">Modules</h2>
+        <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
+          Modules
+        </h2>
         <div className="space-y-4">
           {(course.modules ?? []).map((module) => (
             <ModuleEditorCard

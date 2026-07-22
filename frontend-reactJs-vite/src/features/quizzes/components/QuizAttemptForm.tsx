@@ -25,7 +25,9 @@ export function QuizAttemptForm({
       }}
       className="space-y-4"
     >
-      <h1 className="text-xl font-semibold text-gray-900">{quiz.title}</h1>
+      <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+        {quiz.title}
+      </h1>
 
       {quiz.questions?.map((question, index) => (
         <QuestionCard
@@ -37,7 +39,12 @@ export function QuizAttemptForm({
         />
       ))}
 
-      <Button type="submit" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        className="w-full sm:w-auto"
+        disabled={isSubmitting}
+        loading={isSubmitting}
+      >
         {isSubmitting ? 'Submitting…' : 'Submit answers'}
       </Button>
     </form>

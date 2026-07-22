@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from '@/app/layout/RootLayout';
+import { HomePage } from '@/app/pages/HomePage';
 import { chatRoutes } from '@/features/ai-chatbot';
 import { assignmentRoutes } from '@/features/assignments';
 import { certificateRoutes } from '@/features/certificates';
@@ -22,9 +23,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: (
-          <div className="p-8 text-center text-gray-500">Coming soon</div>
-        ),
+        element: <HomePage />,
       },
       ...identityRoutes,
       ...coursesRoutes,

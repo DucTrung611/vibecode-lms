@@ -7,9 +7,9 @@ const LearningPathsPage = lazy(() => import('./LearningPathsPage'));
 
 function PageFallback() {
   return (
-    <div className="mx-auto max-w-3xl space-y-3 px-4 py-12">
+    <div className="mx-auto max-w-3xl space-y-3">
       <Skeleton className="h-8 w-1/2" />
-      <Skeleton className="h-40 w-full" />
+      <Skeleton className="h-40 w-full rounded-card" />
     </div>
   );
 }

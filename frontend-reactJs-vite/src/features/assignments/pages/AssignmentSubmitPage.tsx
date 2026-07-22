@@ -12,7 +12,7 @@ export default function AssignmentSubmitPage() {
 
   if (isPending) {
     return (
-      <div className="mx-auto max-w-2xl space-y-4 px-4 py-12">
+      <div className="mx-auto max-w-2xl space-y-4">
         <Skeleton className="h-8 w-2/3" />
         <Skeleton className="h-40 w-full" />
       </div>
@@ -21,8 +21,8 @@ export default function AssignmentSubmitPage() {
 
   if (isError || !assignment) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-12">
-        <p className="text-center text-red-600">
+      <div className="mx-auto max-w-2xl rounded-card border border-danger-500/30 bg-danger-50 p-6 text-center dark:bg-danger-500/10">
+        <p className="text-sm font-medium text-danger-700 dark:text-danger-500">
           Could not load this assignment.
         </p>
       </div>
@@ -30,11 +30,11 @@ export default function AssignmentSubmitPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12">
+    <div className="mx-auto max-w-2xl">
       <AssignmentDetails assignment={assignment} />
 
       {submitAssignment.isSuccess ? (
-        <p className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700">
+        <p className="mt-6 rounded-card border border-success-500/30 bg-success-50 p-4 text-sm font-medium text-success-700 dark:bg-success-500/10 dark:text-success-500">
           Your submission has been received.
         </p>
       ) : (

@@ -14,23 +14,25 @@ export function Pagination({ meta, onPageChange }: PaginationProps) {
   }
 
   return (
-    <div className="flex items-center justify-center gap-4">
+    <div className="flex items-center justify-center gap-4 py-2">
       <Button
         variant="secondary"
+        size="sm"
         disabled={meta.page <= 1}
         onClick={() => onPageChange(meta.page - 1)}
       >
-        Previous
+        <span aria-hidden="true">←</span> Previous
       </Button>
-      <span className="text-sm text-gray-600">
+      <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
         Page {meta.page} of {totalPages}
       </span>
       <Button
         variant="secondary"
+        size="sm"
         disabled={meta.page >= totalPages}
         onClick={() => onPageChange(meta.page + 1)}
       >
-        Next
+        Next <span aria-hidden="true">→</span>
       </Button>
     </div>
   );

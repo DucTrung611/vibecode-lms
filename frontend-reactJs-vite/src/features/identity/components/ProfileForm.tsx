@@ -13,6 +13,17 @@ interface ProfileFormProps {
   user: AuthUser;
 }
 
+const labelClass = 'block text-sm font-medium text-slate-700 dark:text-slate-300';
+const errorClass = 'mt-1.5 text-sm text-danger-600 dark:text-danger-500';
+const baseInputClass =
+  'mt-1.5 w-full rounded-control border bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500';
+const inputClass = (hasError?: boolean) =>
+  `${baseInputClass} ${
+    hasError
+      ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500/30 dark:border-danger-500'
+      : 'border-slate-300 focus:border-brand-500 focus:ring-brand-500/30 dark:border-slate-700'
+  }`;
+
 export function ProfileForm({ user }: ProfileFormProps) {
   const updateProfile = useUpdateProfile();
   const {
@@ -28,31 +39,27 @@ export function ProfileForm({ user }: ProfileFormProps) {
   return (
     <form
       onSubmit={handleSubmit((values) => updateProfile.mutate(values))}
-      className="w-full max-w-sm space-y-4"
+      className="w-full space-y-4"
       noValidate
     >
       <div>
-        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="fullName" className={labelClass}>
           Full name
         </label>
         <input
           id="fullName"
           type="text"
           autoComplete="name"
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          aria-invalid={!!errors.fullName}
+          className={inputClass(!!errors.fullName)}
           {...register('fullName')}
         />
-        {errors.fullName && (
-          <p className="mt-1 text-sm text-red-600">{errors.fullName.message}</p>
-        )}
+        {errors.fullName && <p className={errorClass}>{errors.fullName.message}</p>}
       </div>
 
       <div>
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="avatarUrl"
-            className="block text-sm font-medium text-gray-700"
-          >
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="avatarUrl" className={labelClass}>
             Avatar URL
           </label>
           <FileUploadButton
@@ -67,15 +74,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
           id="avatarUrl"
           type="url"
           placeholder="https://…"
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          aria-invalid={!!errors.avatarUrl}
+          className={inputClass(!!errors.avatarUrl)}
           {...register('avatarUrl')}
         />
-        {errors.avatarUrl && (
-          <p className="mt-1 text-sm text-red-600">{errors.avatarUrl.message}</p>
-        )}
+        {errors.avatarUrl && <p className={errorClass}>{errors.avatarUrl.message}</p>}
       </div>
 
-      <Button type="submit" disabled={updateProfile.isPending}>
+      <Button type="submit" loading={updateProfile.isPending}>
         {updateProfile.isPending ? 'Saving…' : 'Save changes'}
       </Button>
     </form>

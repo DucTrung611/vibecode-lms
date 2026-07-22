@@ -12,14 +12,14 @@ export function NotificationList({
 }: NotificationListProps) {
   if (items.length === 0) {
     return (
-      <p className="px-4 py-6 text-center text-sm text-gray-500">
+      <p className="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
         No notifications yet.
       </p>
     );
   }
 
   return (
-    <ul className="max-h-96 divide-y divide-gray-100 overflow-y-auto">
+    <ul className="max-h-96 divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800">
       {items.map((notification) => (
         <NotificationItem
           key={notification.id}

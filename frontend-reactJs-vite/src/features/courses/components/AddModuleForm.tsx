@@ -30,14 +30,16 @@ export function AddModuleForm({ isPending, onSubmit }: AddModuleFormProps) {
           type="text"
           placeholder="New module title"
           aria-label="New module title"
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="w-full rounded-control border border-surface-200 bg-surface-0 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           {...register('title')}
         />
         {errors.title && (
-          <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+          <p className="mt-1 text-sm text-danger-600 dark:text-danger-400">
+            {errors.title.message}
+          </p>
         )}
       </div>
-      <Button type="submit" variant="secondary" disabled={isPending}>
+      <Button type="submit" variant="secondary" loading={isPending}>
         Add module
       </Button>
     </form>

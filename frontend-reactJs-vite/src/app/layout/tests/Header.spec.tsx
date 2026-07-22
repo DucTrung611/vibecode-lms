@@ -46,11 +46,11 @@ describe('Header', () => {
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sign up' })).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Log out' }),
+      screen.queryByRole('button', { name: 'Jane Doe' }),
     ).not.toBeInTheDocument();
   });
 
-  it('shows student-only nav links and logs out when clicked', async () => {
+  it('shows student-only nav links and signs out from the account menu', async () => {
     vi.mocked(useAuth).mockReturnValue({ isAuthenticated: true });
     useAuthStore.setState({
       user: {
@@ -67,9 +67,13 @@ describe('Header', () => {
     expect(screen.getByRole('link', { name: 'My courses' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Orders' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Ask AI' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Jane Doe' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Log out' }));
+    await user.click(screen.getByRole('button', { name: 'Jane Doe' }));
+    expect(
+      screen.getByRole('menuitem', { name: 'My profile' }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('menuitem', { name: 'Sign out' }));
     expect(logoutMutate).toHaveBeenCalled();
   });
 

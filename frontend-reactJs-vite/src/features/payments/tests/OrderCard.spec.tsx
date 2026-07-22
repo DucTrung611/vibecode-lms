@@ -27,7 +27,9 @@ describe('OrderCard', () => {
 
     expect(screen.getByText('Intro to Algebra')).toBeInTheDocument();
     expect(screen.getByText('PAID')).toBeInTheDocument();
-    expect(screen.getByText('Total $49.99')).toBeInTheDocument();
+    expect(screen.getByText('Total')).toBeInTheDocument();
+    // Appears twice: once as the single item's price, once as the order total.
+    expect(screen.getAllByText('$49.99')).toHaveLength(2);
   });
 
   it('falls back to "Untitled course" when the item has no course summary', () => {

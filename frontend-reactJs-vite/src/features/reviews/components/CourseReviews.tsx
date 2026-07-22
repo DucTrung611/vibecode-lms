@@ -12,15 +12,17 @@ export function CourseReviews({ courseId }: CourseReviewsProps) {
   const createReview = useCreateReview(courseId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">Reviews</h2>
+        <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
+          Reviews
+        </h2>
         <ReviewList courseId={courseId} />
       </div>
 
       {user?.role === 'STUDENT' && !createReview.isSuccess ? (
-        <div>
-          <h3 className="mb-2 text-sm font-semibold text-gray-900">
+        <div className="rounded-card border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
             Leave a review
           </h3>
           <ReviewForm
