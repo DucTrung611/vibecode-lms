@@ -121,12 +121,13 @@ Both shapes are produced globally by `ResponseInterceptor` / `HttpExceptionFilte
 | Method | Path | Description | Auth |
 |---|---|---|---|
 | GET | `/courses` | List/search courses (paginated, filterable) | Public |
-| GET | `/courses/:id` | Course detail with modules/lessons | Public |
+| GET | `/courses/:id` | Course detail with modules/lessons, plus an embedded `instructor: {id, fullName, avatarUrl}` summary | Public |
 | POST | `/courses` | Create course | Instructor |
 | PATCH | `/courses/:id` | Update course | Instructor (owner) |
 | DELETE | `/courses/:id` | Soft-delete course | Instructor (owner) |
 | POST | `/courses/:id/modules` | Add module | Instructor (owner) |
 | POST | `/modules/:id/lessons` | Add lesson | Instructor (owner) |
+| PATCH | `/lessons/:id` | Update lesson | Instructor (owner) |
 
 ### Enrollment
 | Method | Path | Description | Auth |
@@ -181,6 +182,12 @@ Both shapes are produced globally by `ResponseInterceptor` / `HttpExceptionFilte
 | GET | `/lessons/:id/questions` | List questions for a lesson, with nested answers (paginated) | Enrolled student or owning instructor |
 | POST | `/lessons/:id/questions` | Ask a question on a lesson | Enrolled student |
 | POST | `/questions/:id/answers` | Answer a question | Enrolled student or owning instructor |
+
+### Instructor Storefront
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| GET | `/instructors/:id` | Public instructor profile (name, avatar, bio) + aggregated stats (published course count, distinct student count, average rating across published courses) | Public |
+| GET | `/instructors/:id/courses` | Instructor's published courses (paginated) | Public |
 
 ### Instructor Analytics
 | Method | Path | Description | Auth |
@@ -308,6 +315,28 @@ Internally: user message persisted → relevant `document_chunks` retrieved (vec
 }
 ```
 `averageRating` at both the course and totals level is `null` when there are no reviews yet; `completionRate` is `0` (not `null`) when there are no enrollments.
+
+### `GET /instructors/:id`
+**Response** `200`
+```json
+{
+  "success": true,
+  "data": {
+    "id": "instr_1",
+    "fullName": "Prof X",
+    "avatarUrl": "https://cdn.example.com/avatars/instr_1.png",
+    "bio": "10 years teaching algebra and calculus.",
+    "stats": {
+      "totalCourses": 2,
+      "totalStudents": 15,
+      "averageRating": 4.6,
+      "reviewCount": 5
+    }
+  }
+}
+```
+`totalStudents` counts each student once even if enrolled in multiple of the instructor's courses. `averageRating`/`reviewCount` are computed only from the instructor's `PUBLISHED` courses, and `averageRating` is `null` when there are no reviews yet.
+**Error cases**: `404 AUTH_007` if the id doesn't belong to any user, or belongs to a user who isn't an `INSTRUCTOR`.
 
 ### `POST /courses/:id/enroll`
 **Response** `201`

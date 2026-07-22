@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/shared/components/Skeleton';
+import { StatCard } from '@/shared/components/StatCard';
 import { CourseAnalyticsTable } from '../components/CourseAnalyticsTable';
-import { StatCard } from '../components/StatCard';
 import { useInstructorOverview } from '../hooks/useInstructorOverview';
 
 export default function InstructorAnalyticsPage() {

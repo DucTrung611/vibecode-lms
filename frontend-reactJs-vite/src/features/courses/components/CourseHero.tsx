@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Course } from '../types/courses.types';
 import { LevelBadge } from './CourseBadges';
 
@@ -39,6 +40,22 @@ export function CourseHero({ course, ratingAverage, ratingCount }: CourseHeroPro
             {course.title}
           </h1>
           <p className="mt-3 text-base text-slate-300">{course.description}</p>
+
+          {course.instructor ? (
+            <Link
+              to={`/instructors/${course.instructor.id}`}
+              className="mt-3 inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            >
+              {course.instructor.avatarUrl ? (
+                <img
+                  src={course.instructor.avatarUrl}
+                  alt=""
+                  className="h-6 w-6 rounded-full object-cover"
+                />
+              ) : null}
+              <span>By {course.instructor.fullName}</span>
+            </Link>
+          ) : null}
 
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
             {ratingCount > 0 ? (

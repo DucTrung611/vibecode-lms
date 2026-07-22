@@ -30,6 +30,12 @@ export interface CourseModule {
   lessons?: Lesson[];
 }
 
+export interface CourseInstructorSummary {
+  id: string;
+  fullName: string;
+  avatarUrl: string | null;
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -44,6 +50,7 @@ export interface Course {
   createdAt: string;
   updatedAt: string;
   modules?: CourseModule[];
+  instructor?: CourseInstructorSummary;
 }
 
 export interface Category {

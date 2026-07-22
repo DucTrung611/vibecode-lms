@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { Skeleton } from '@/shared/components/Skeleton';
-import { StatCard } from '../components/StatCard';
+import { StatCard } from '@/shared/components/StatCard';
 import { useCourseAnalytics } from '../hooks/useCourseAnalytics';
 
 export default function InstructorCourseAnalyticsPage() {

@@ -9,6 +9,7 @@ import { certificateRoutes } from '@/features/certificates';
 import { coursesRoutes } from '@/features/courses';
 import { enrollmentRoutes } from '@/features/enrollment';
 import { identityRoutes } from '@/features/identity';
+import { instructorsRoutes } from '@/features/instructors';
 import { learningPathRoutes } from '@/features/learning-paths';
 import { notificationRoutes } from '@/features/notifications';
 import { paymentRoutes } from '@/features/payments';
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       ...learningPathRoutes,
       ...chatRoutes,
       ...analyticsRoutes,
+      ...instructorsRoutes,
     ],
   },
 ]);

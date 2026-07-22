@@ -13,6 +13,7 @@ import { CoursesModule } from './features/courses/courses.module';
 import { DiscussionsModule } from './features/discussions/discussions.module';
 import { EnrollmentModule } from './features/enrollment/enrollment.module';
 import { IdentityModule } from './features/identity/identity.module';
+import { InstructorsModule } from './features/instructors/instructors.module';
 import { LearningPathsModule } from './features/learning-paths/learning-paths.module';
 import { NotificationsModule } from './features/notifications/notifications.module';
 import { PaymentsModule } from './features/payments/payments.module';
@@ -44,6 +45,7 @@ import { UploadsModule } from './features/uploads/uploads.module';
     UploadsModule,
     DiscussionsModule,
     AnalyticsModule,
+    InstructorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
