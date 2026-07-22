@@ -41,4 +41,8 @@ export class QueryCoursesDto {
   @IsOptional()
   @IsEnum(CourseLevel)
   level?: CourseLevel;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

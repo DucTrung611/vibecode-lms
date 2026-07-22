@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 import { CourseCard } from '../components/CourseCard';
 import { CourseCardSkeleton } from '../components/CourseCardSkeleton';
 import { CourseFilters } from '../components/CourseFilters';
+import { CourseSearchInput } from '../components/CourseSearchInput';
 import { useCourses } from '../hooks/useCourses';
 import type { CourseLevel } from '../types/courses.types';
 
@@ -11,8 +13,10 @@ export default function CourseCatalogPage() {
   const [page, setPage] = useState(1);
   const [level, setLevel] = useState<CourseLevel | ''>('');
   const [categoryId, setCategoryId] = useState('');
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search.trim(), 400);
 
-  const hasActiveFilters = level !== '' || categoryId !== '';
+  const hasActiveFilters = level !== '' || categoryId !== '' || debouncedSearch !== '';
 
   const { data, isPending, isError } = useCourses({
     page,
@@ -20,20 +24,32 @@ export default function CourseCatalogPage() {
     status: 'PUBLISHED',
     level: level || undefined,
     categoryId: categoryId || undefined,
+    search: debouncedSearch || undefined,
   });
 
   function clearFilters() {
     setLevel('');
     setCategoryId('');
+    setSearch('');
     setPage(1);
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
           Courses
         </h1>
+      </div>
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <CourseSearchInput
+          value={search}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+        />
         <CourseFilters
           level={level}
           onLevelChange={(value) => {

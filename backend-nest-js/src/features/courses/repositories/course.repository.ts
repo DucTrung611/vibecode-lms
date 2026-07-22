@@ -49,6 +49,14 @@ export class CourseRepository {
       ...(filters.status ? { status: filters.status as CourseStatus } : {}),
       ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
       ...(filters.level ? { level: filters.level as CourseLevel } : {}),
+      ...(filters.search
+        ? {
+            OR: [
+              { title: { contains: filters.search } },
+              { description: { contains: filters.search } },
+            ],
+          }
+        : {}),
     };
 
     const [items, total] = await Promise.all([

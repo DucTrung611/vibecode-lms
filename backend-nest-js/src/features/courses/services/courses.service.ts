@@ -45,6 +45,7 @@ export class CoursesService {
       status: query.status,
       categoryId: query.categoryId,
       level: query.level,
+      search: query.search,
     });
 
     return {

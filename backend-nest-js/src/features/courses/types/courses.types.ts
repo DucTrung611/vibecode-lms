@@ -6,4 +6,5 @@ export interface CourseListFilters {
   status?: string;
   categoryId?: string;
   level?: string;
+  search?: string;
 }

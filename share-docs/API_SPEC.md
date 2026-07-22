@@ -23,7 +23,7 @@ Builds on `DATABASE.md` (entities) and `ARCHITECTURE.md` (controller/service/rep
 
 - **Pagination**: `?page=1&limit=20` (default `page=1`, `limit=20`, max `limit=100`).
 - **Sorting**: `?sortBy=createdAt&order=desc` (`order` = `asc` | `desc`).
-- **Filtering**: feature-specific query params, e.g. `GET /courses?status=PUBLISHED&categoryId=cat_123&level=BEGINNER`.
+- **Filtering**: feature-specific query params, e.g. `GET /courses?status=PUBLISHED&categoryId=cat_123&level=BEGINNER&search=algebra` (`search` matches against course `title`/`description`).
 - **Request body**: JSON matching the feature's DTO (validated via `class-validator`, see `PROJECT-RULES.md`).
 - **File upload**: `multipart/form-data`, field name `file`; response returns the stored `fileUrl`. Max size enforced per feature (e.g., 50MB for videos, 10MB for submissions).
 

@@ -70,6 +70,36 @@ describe('CourseRepository', () => {
       expect(result).toEqual({ items: [fakeCourse], total: 1 });
     });
 
+    it('adds an OR clause on title/description when search is provided', async () => {
+      prisma.course.findMany.mockResolvedValue([fakeCourse]);
+      prisma.course.count.mockResolvedValue(1);
+
+      await repository.findMany({
+        page: 1,
+        limit: 20,
+        sortBy: 'createdAt',
+        order: 'desc',
+        search: 'algebra',
+      });
+
+      const expectedWhere = {
+        deletedAt: null,
+        OR: [
+          { title: { contains: 'algebra' } },
+          { description: { contains: 'algebra' } },
+        ],
+      };
+      expect(prisma.course.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        orderBy: { createdAt: 'desc' },
+        skip: 0,
+        take: 20,
+      });
+      expect(prisma.course.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+    });
+
     it('omits optional filters entirely when not provided', async () => {
       prisma.course.findMany.mockResolvedValue([]);
       prisma.course.count.mockResolvedValue(0);

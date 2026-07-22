@@ -61,6 +61,7 @@ export interface CourseListFilters {
   status?: CourseStatus;
   categoryId?: string;
   level?: CourseLevel;
+  search?: string;
 }
 
 export const courseFormSchema = z.object({

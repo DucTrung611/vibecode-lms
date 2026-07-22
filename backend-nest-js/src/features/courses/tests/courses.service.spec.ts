@@ -102,6 +102,7 @@ describe('CoursesService', () => {
         status: undefined,
         categoryId: undefined,
         level: undefined,
+        search: undefined,
       });
       expect(result.meta).toEqual({ page: 1, limit: 20, total: 1 });
       expect(result.items[0]).toMatchObject({ id: 'course_1' });
@@ -118,6 +119,7 @@ describe('CoursesService', () => {
         status: 'PUBLISHED',
         categoryId: 'cat_1',
         level: 'ADVANCED',
+        search: 'algebra',
       });
 
       expect(courseRepository.findMany).toHaveBeenCalledWith({
@@ -128,6 +130,7 @@ describe('CoursesService', () => {
         status: 'PUBLISHED',
         categoryId: 'cat_1',
         level: 'ADVANCED',
+        search: 'algebra',
       });
     });
   });
