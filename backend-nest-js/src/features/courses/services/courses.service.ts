@@ -11,6 +11,7 @@ import { CreateLessonDto } from '../dto/create-lesson.dto';
 import { CreateModuleDto } from '../dto/create-module.dto';
 import { QueryCoursesDto } from '../dto/query-courses.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
+import { UpdateLessonDto } from '../dto/update-lesson.dto';
 import { CourseEntity } from '../entities/course.entity';
 import { LessonEntity } from '../entities/lesson.entity';
 import { ModuleEntity } from '../entities/module.entity';
@@ -60,6 +61,23 @@ export class CoursesService {
       throw new ApiException(404, 'COURSE_004', 'Course not found');
     }
     return CourseEntity.fromPrisma(course);
+  }
+
+  async findPublishedByInstructor(
+    instructorId: string,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResult<CourseEntity>> {
+    const { items, total } = await this.courseRepository.findPublishedByInstructor(
+      instructorId,
+      page,
+      limit,
+    );
+
+    return {
+      items: items.map((course) => CourseEntity.fromPrisma(course)),
+      meta: { page, limit, total },
+    };
   }
 
   async findCourseIdByLessonId(lessonId: string): Promise<string> {
@@ -168,6 +186,28 @@ export class CoursesService {
     });
 
     return LessonEntity.fromPrisma(lesson);
+  }
+
+  async updateLesson(
+    instructorId: string,
+    lessonId: string,
+    dto: UpdateLessonDto,
+  ): Promise<LessonEntity> {
+    const lesson = await this.lessonRepository.findById(lessonId);
+    if (!lesson) {
+      throw new ApiException(404, 'COURSE_007', 'Lesson not found');
+    }
+
+    const module = await this.moduleRepository.findById(lesson.moduleId);
+    if (!module) {
+      throw new ApiException(404, 'COURSE_006', 'Module not found');
+    }
+    if (module.course.instructorId !== instructorId) {
+      throw new ApiException(403, 'AUTH_003', 'You do not own this course');
+    }
+
+    const updated = await this.lessonRepository.update(lessonId, dto);
+    return LessonEntity.fromPrisma(updated);
   }
 
   private async getOwnedCourseOrThrow(instructorId: string, courseId: string) {

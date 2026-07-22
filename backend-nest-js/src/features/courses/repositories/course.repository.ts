@@ -25,6 +25,7 @@ export interface UpdateCourseData {
 }
 
 const detailInclude = {
+  instructor: { select: { id: true, fullName: true, avatarUrl: true } },
   modules: {
     include: {
       lessons: {
@@ -85,6 +86,30 @@ export class CourseRepository {
 
   findBySlug(slug: string): Promise<Course | null> {
     return this.prisma.course.findUnique({ where: { slug } });
+  }
+
+  async findPublishedByInstructor(
+    instructorId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ items: Course[]; total: number }> {
+    const where: Prisma.CourseWhereInput = {
+      instructorId,
+      status: 'PUBLISHED',
+      deletedAt: null,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.course.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.course.count({ where }),
+    ]);
+
+    return { items, total };
   }
 
   categoryExists(categoryId: string): Promise<boolean> {

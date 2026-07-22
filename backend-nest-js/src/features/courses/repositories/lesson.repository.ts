@@ -12,6 +12,14 @@ export interface CreateLessonData {
   order: number;
 }
 
+export interface UpdateLessonData {
+  title?: string;
+  type?: LessonType;
+  videoUrl?: string;
+  content?: string;
+  durationSec?: number;
+}
+
 @Injectable()
 export class LessonRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -26,6 +34,10 @@ export class LessonRepository {
 
   create(data: CreateLessonData): Promise<Lesson> {
     return this.prisma.lesson.create({ data });
+  }
+
+  update(id: string, data: UpdateLessonData): Promise<Lesson> {
+    return this.prisma.lesson.update({ where: { id }, data });
   }
 
   findCourseIdById(

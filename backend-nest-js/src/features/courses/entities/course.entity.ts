@@ -2,6 +2,12 @@ import { Course, Module as ModuleModel } from '@prisma/client';
 import { LessonWithLinks } from './lesson.entity';
 import { ModuleEntity } from './module.entity';
 
+export interface CourseInstructorSummary {
+  id: string;
+  fullName: string;
+  avatarUrl: string | null;
+}
+
 export class CourseEntity {
   id: string;
   title: string;
@@ -16,10 +22,12 @@ export class CourseEntity {
   createdAt: Date;
   updatedAt: Date;
   modules?: ModuleEntity[];
+  instructor?: CourseInstructorSummary;
 
   static fromPrisma(
     course: Course & {
       modules?: (ModuleModel & { lessons: LessonWithLinks[] })[];
+      instructor?: CourseInstructorSummary;
     },
   ): CourseEntity {
     const entity = new CourseEntity();
@@ -35,6 +43,13 @@ export class CourseEntity {
     entity.categoryId = course.categoryId;
     entity.createdAt = course.createdAt;
     entity.updatedAt = course.updatedAt;
+    if (course.instructor) {
+      entity.instructor = {
+        id: course.instructor.id,
+        fullName: course.instructor.fullName,
+        avatarUrl: course.instructor.avatarUrl,
+      };
+    }
     if (course.modules) {
       entity.modules = course.modules
         .slice()

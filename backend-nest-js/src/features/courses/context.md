@@ -21,6 +21,7 @@ Course catalog and authoring: courses, modules, lessons, and categories.
 | DELETE | `/courses/:id` | ✅ |
 | POST | `/courses/:id/modules` | ✅ |
 | POST | `/modules/:id/lessons` | ✅ |
+| PATCH | `/lessons/:id` | ✅ |
 | GET | `/categories` | ✅ |
 | POST | `/categories` | ✅ |
 
@@ -39,6 +40,7 @@ Other features must inject `CoursesService`/`CategoriesService` — never `Cours
 - **`GET /courses` default scope**: returns all non-soft-deleted courses regardless of `status` unless the caller passes `?status=`, matching the query-filter pattern documented in `API_SPEC.md` §3 literally. There's no "my courses" endpoint in the spec for instructors to list their own drafts — out of scope for this phase.
 - **Ownership check**: `PATCH/DELETE /courses/:id` and `POST /courses/:id/modules` verify `course.instructorId === currentUser.id` in the service layer (not the guard) — `RolesGuard` only confirms the caller *is* an instructor, not that they own *this* course.
 - **`order` fields** (`Module.order`, `Lesson.order`): auto-assigned as the current sibling count when the DTO omits `order`, so callers can append without tracking indices themselves.
+- **`PATCH /lessons/:id` deliberately omits `order`** — reordering lessons within a module is a separate, unrequested feature (see "Known Constraints"). `UpdateLessonDto` otherwise mirrors `CreateLessonDto` (all fields optional). Ownership is resolved by walking `lesson.moduleId → ModuleRepository.findById(moduleId).course.instructorId` — the same lookup `addLesson` already performs, just entered from the lesson side instead of the module side, so no new repository method was needed beyond the plain `LessonRepository.update`.
 - **Price**: Prisma `Decimal` is converted to `number` in `CourseEntity` for a plain-JSON API response.
 - **`LessonEntity.quizId`/`assignmentId`**: `GET /courses/:id`'s `detailInclude` now also pulls each lesson's linked `quizzes`/`assignments` (id only, via the `Lesson.quizzes`/`Lesson.assignments` relations already in `schema.prisma`), and `LessonEntity.fromPrisma` collapses each to a single nullable id (`lesson.quizzes?.[0]?.id ?? null`). This closes the "no discovery path from a course to its quizzes/assignments" gap both `quizzes`' and `assignments`' frontend `context.md` files flagged — the frontend can now render a "Take Quiz"/"View Assignment" link directly from a lesson without a separate lookup endpoint. Takes the *first* linked quiz/assignment only; `DATABASE.md` doesn't define a per-lesson cardinality limit, but `API_SPEC.md`'s UI-facing flows only ever need one link per lesson.
 - **`POST /categories` requires `INSTRUCTOR`, not `ADMIN`** — `Category` isn't role-scoped in `DATABASE.md`/`API_SPEC.md` at all (neither the entity nor an endpoint were specified), and this app has no functional admin flow: `identity`'s `context.md` documents that public registration only allows `STUDENT`/`INSTRUCTOR` and `ADMIN` accounts "must be provisioned out-of-band" — meaning an `ADMIN`-gated endpoint would be uncreatable through the running app by anyone. `INSTRUCTOR` was chosen as the closest role that can actually reach this endpoint and has a real reason to (assigning a category while creating a course). A judgment call, not a spec requirement — revisit if `ADMIN` provisioning is ever built.
@@ -58,4 +60,5 @@ Reuses `COURSE_004` (404, course not found) and `AUTH_003` (403, reused for owne
 
 ## Known Constraints / Deferred
 - No category *update*/*delete* endpoints — only list/create exist. Not specified anywhere; add if renaming/removing a category ever becomes a real need.
+- No lesson *delete* endpoint and no lesson *reordering* — `PATCH /lessons/:id` only covers field edits (title/type/videoUrl/content/durationSec).
 - No file upload for `thumbnailUrl`/`videoUrl`/lesson `Resource` — those are plain string URL fields for now; wiring real `multipart/form-data` uploads (`API_SPEC.md` §3) is deferred to whichever feature needs it first. (`POST /uploads` now exists as a generic endpoint — see `uploads/context.md` — and is wired into the *frontend* forms for these fields, but nothing here creates a `Resource` row.)

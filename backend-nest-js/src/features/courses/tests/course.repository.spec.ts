@@ -142,6 +142,9 @@ describe('CourseRepository', () => {
       expect(prisma.course.findFirst).toHaveBeenCalledWith({
         where: { id: 'course_1', deletedAt: null },
         include: {
+          instructor: {
+            select: { id: true, fullName: true, avatarUrl: true },
+          },
           modules: {
             include: {
               lessons: {
@@ -154,6 +157,35 @@ describe('CourseRepository', () => {
           },
         },
       });
+    });
+  });
+
+  describe('findPublishedByInstructor', () => {
+    it('queries only published, non-deleted courses for the instructor', async () => {
+      prisma.course.findMany.mockResolvedValue([fakeCourse]);
+      prisma.course.count.mockResolvedValue(1);
+
+      const result = await repository.findPublishedByInstructor(
+        'instructor_1',
+        2,
+        10,
+      );
+
+      const expectedWhere = {
+        instructorId: 'instructor_1',
+        status: 'PUBLISHED',
+        deletedAt: null,
+      };
+      expect(prisma.course.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        orderBy: { createdAt: 'desc' },
+        skip: 10,
+        take: 10,
+      });
+      expect(prisma.course.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+      expect(result).toEqual({ items: [fakeCourse], total: 1 });
     });
   });
 

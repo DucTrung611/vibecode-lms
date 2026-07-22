@@ -8,6 +8,7 @@ describe('LessonRepository', () => {
     lesson: {
       count: jest.Mock;
       create: jest.Mock;
+      update: jest.Mock;
     };
   };
 
@@ -18,6 +19,7 @@ describe('LessonRepository', () => {
       lesson: {
         count: jest.fn(),
         create: jest.fn(),
+        update: jest.fn(),
       },
     };
     repository = new LessonRepository(prisma as unknown as PrismaService);
@@ -49,6 +51,21 @@ describe('LessonRepository', () => {
       const result = await repository.create(data);
 
       expect(prisma.lesson.create).toHaveBeenCalledWith({ data });
+      expect(result).toBe(fakeLesson);
+    });
+  });
+
+  describe('update', () => {
+    it('updates by id with the given partial data', async () => {
+      prisma.lesson.update.mockResolvedValue(fakeLesson);
+      const data = { title: 'New title' };
+
+      const result = await repository.update('lesson_1', data);
+
+      expect(prisma.lesson.update).toHaveBeenCalledWith({
+        where: { id: 'lesson_1' },
+        data,
+      });
       expect(result).toBe(fakeLesson);
     });
   });

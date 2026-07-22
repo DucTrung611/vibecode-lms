@@ -16,6 +16,7 @@ describe('CoursesService', () => {
       | 'findById'
       | 'findByIdWithDetail'
       | 'findBySlug'
+      | 'findPublishedByInstructor'
       | 'categoryExists'
       | 'create'
       | 'update'
@@ -26,7 +27,7 @@ describe('CoursesService', () => {
     Pick<ModuleRepository, 'findById' | 'countByCourse' | 'create'>
   >;
   let lessonRepository: jest.Mocked<
-    Pick<LessonRepository, 'countByModule' | 'create'>
+    Pick<LessonRepository, 'countByModule' | 'create' | 'findById' | 'update'>
   >;
 
   const slugify = slugUtil.slugify as jest.Mock;
@@ -54,6 +55,7 @@ describe('CoursesService', () => {
       findById: jest.fn(),
       findByIdWithDetail: jest.fn(),
       findBySlug: jest.fn(),
+      findPublishedByInstructor: jest.fn(),
       categoryExists: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -67,6 +69,8 @@ describe('CoursesService', () => {
     lessonRepository = {
       countByModule: jest.fn(),
       create: jest.fn(),
+      findById: jest.fn(),
+      update: jest.fn(),
     };
 
     slugify.mockImplementation((title: string) =>
@@ -153,6 +157,35 @@ describe('CoursesService', () => {
       const result = await service.findById('course_1');
 
       expect(result.id).toBe('course_1');
+    });
+
+    it('maps the embedded instructor summary when present', async () => {
+      courseRepository.findByIdWithDetail.mockResolvedValue({
+        ...fakeCourse,
+        instructor: {
+          id: 'instructor_1',
+          fullName: 'Prof X',
+          avatarUrl: null,
+        },
+      } as never);
+
+      const result = await service.findById('course_1');
+
+      expect(result.instructor).toEqual({
+        id: 'instructor_1',
+        fullName: 'Prof X',
+        avatarUrl: null,
+      });
+    });
+
+    it('omits instructor when not included in the query', async () => {
+      courseRepository.findByIdWithDetail.mockResolvedValue(
+        fakeCourse as never,
+      );
+
+      const result = await service.findById('course_1');
+
+      expect(result.instructor).toBeUndefined();
     });
 
     it("resolves each lesson's linked quiz/assignment ids for discovery", async () => {
@@ -486,6 +519,95 @@ describe('CoursesService', () => {
 
       expect(lessonRepository.countByModule).toHaveBeenCalledWith('module_1');
       expect(result.order).toBe(4);
+    });
+  });
+
+  describe('findPublishedByInstructor', () => {
+    it('normalizes results into a PaginatedResult', async () => {
+      courseRepository.findPublishedByInstructor.mockResolvedValue({
+        items: [fakeCourse],
+        total: 1,
+      });
+
+      const result = await service.findPublishedByInstructor(
+        'instructor_1',
+        1,
+        20,
+      );
+
+      expect(courseRepository.findPublishedByInstructor).toHaveBeenCalledWith(
+        'instructor_1',
+        1,
+        20,
+      );
+      expect(result.meta).toEqual({ page: 1, limit: 20, total: 1 });
+      expect(result.items[0]).toMatchObject({ id: 'course_1' });
+    });
+  });
+
+  describe('updateLesson', () => {
+    const fakeLesson = {
+      id: 'lesson_1',
+      moduleId: 'module_1',
+      title: 'Lesson 1',
+      type: 'VIDEO' as const,
+      videoUrl: null,
+      content: null,
+      durationSec: null,
+      order: 0,
+    };
+
+    it('throws COURSE_007 (404) when the lesson does not exist', async () => {
+      lessonRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.updateLesson('instructor_1', 'missing', { title: 'New' }),
+      ).rejects.toMatchObject({ httpStatus: 404, code: 'COURSE_007' });
+      expect(moduleRepository.findById).not.toHaveBeenCalled();
+    });
+
+    it('throws COURSE_006 (404) when the parent module is missing', async () => {
+      lessonRepository.findById.mockResolvedValue(fakeLesson as never);
+      moduleRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.updateLesson('instructor_1', 'lesson_1', { title: 'New' }),
+      ).rejects.toMatchObject({ httpStatus: 404, code: 'COURSE_006' });
+      expect(lessonRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('throws AUTH_003 (403) when the caller does not own the parent course', async () => {
+      lessonRepository.findById.mockResolvedValue(fakeLesson as never);
+      moduleRepository.findById.mockResolvedValue({
+        id: 'module_1',
+        course: { instructorId: 'someone_else' },
+      } as never);
+
+      await expect(
+        service.updateLesson('instructor_1', 'lesson_1', { title: 'New' }),
+      ).rejects.toMatchObject({ httpStatus: 403, code: 'AUTH_003' });
+      expect(lessonRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('updates and returns the mapped lesson on success', async () => {
+      lessonRepository.findById.mockResolvedValue(fakeLesson as never);
+      moduleRepository.findById.mockResolvedValue({
+        id: 'module_1',
+        course: { instructorId: 'instructor_1' },
+      } as never);
+      lessonRepository.update.mockResolvedValue({
+        ...fakeLesson,
+        title: 'Updated title',
+      } as never);
+
+      const result = await service.updateLesson('instructor_1', 'lesson_1', {
+        title: 'Updated title',
+      });
+
+      expect(lessonRepository.update).toHaveBeenCalledWith('lesson_1', {
+        title: 'Updated title',
+      });
+      expect(result.title).toBe('Updated title');
     });
   });
 });
