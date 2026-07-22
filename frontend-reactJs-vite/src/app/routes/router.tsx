@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from '@/app/layout/RootLayout';
 import { HomePage } from '@/app/pages/HomePage';
+import { RouteErrorPage } from '@/app/pages/RouteErrorPage';
 import { chatRoutes } from '@/features/ai-chatbot';
 import { analyticsRoutes } from '@/features/analytics';
 import { assignmentRoutes } from '@/features/assignments';
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
     // keep their own absolute-looking paths unchanged while still rendering
     // inside <RootLayout>'s persistent <Header />.
     element: <RootLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         path: '/',
