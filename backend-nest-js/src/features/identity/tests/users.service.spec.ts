@@ -12,6 +12,7 @@ describe('UsersService', () => {
     password: 'hashed',
     fullName: 'A B',
     avatarUrl: null,
+    bio: null,
     role: 'STUDENT',
     status: 'ACTIVE',
     createdAt: new Date('2026-01-01'),

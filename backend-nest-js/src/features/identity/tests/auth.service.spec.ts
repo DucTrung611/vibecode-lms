@@ -34,6 +34,7 @@ describe('AuthService', () => {
     password: 'hashed-pw',
     fullName: 'A B',
     avatarUrl: null,
+    bio: null,
     role: 'STUDENT',
     status: 'ACTIVE',
     createdAt: new Date('2026-01-01'),

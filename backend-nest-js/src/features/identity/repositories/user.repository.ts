@@ -12,6 +12,7 @@ export interface CreateUserData {
 export interface UpdateUserData {
   fullName?: string;
   avatarUrl?: string;
+  bio?: string;
 }
 
 @Injectable()

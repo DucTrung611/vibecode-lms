@@ -28,7 +28,7 @@
 
 | Table | Fields | Indexes |
 |---|---|---|
-| `users` | id (PK, cuid), email (unique), password, full_name, avatar_url?, role (enum), status (enum), created_at, updated_at, deleted_at? | unique(email) |
+| `users` | id (PK, cuid), email (unique), password, full_name, avatar_url?, bio? (text), role (enum), status (enum), created_at, updated_at, deleted_at? | unique(email) |
 | `refresh_tokens` | id (PK), user_id (FK→users), token_hash, expires_at, revoked_at?, created_at | idx(user_id) |
 
 ### Feature: Courses

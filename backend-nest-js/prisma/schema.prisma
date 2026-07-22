@@ -78,6 +78,7 @@ model User {
   password  String
   fullName  String     @map("full_name")
   avatarUrl String?    @map("avatar_url")
+  bio       String?    @map("bio") @db.Text
   role      UserRole
   status    UserStatus @default(ACTIVE)
   createdAt DateTime   @default(now()) @map("created_at")
