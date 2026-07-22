@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { NotificationBell } from '@/features/notifications';
 import { useAuth } from '@/app/providers/auth-context';
+import { ThemeToggle } from '@/shared/components/ThemeToggle';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { UserMenu } from './UserMenu';
 
@@ -100,6 +101,7 @@ export function Header() {
         <nav className="hidden flex-1 items-center gap-1 md:flex">{navItems}</nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           {isAuthenticated ? (
             <>
               <NotificationBell />
