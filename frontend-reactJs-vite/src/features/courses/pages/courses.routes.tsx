@@ -43,7 +43,7 @@ export const coursesRoutes: RouteObject[] = [
   {
     path: '/courses/:courseId/lessons/:lessonId',
     element: (
-      <ProtectedRoute role="STUDENT">
+      <ProtectedRoute>
         <Suspense fallback={<PageFallback />}>
           <LessonPage />
         </Suspense>

@@ -50,13 +50,13 @@ describe('EnrollButton', () => {
     ).toHaveAttribute('href', '/login');
   });
 
-  it('renders nothing for a non-student (instructor) user', () => {
+  it('shows an explanatory message for a non-student (instructor) user', () => {
     useAuthStore.setState({ user: instructorUser });
-    const { container } = render(<EnrollButton courseId="course_1" />, {
-      wrapper: MemoryRouter,
-    });
+    render(<EnrollButton courseId="course_1" />, { wrapper: MemoryRouter });
 
-    expect(container).toBeEmptyDOMElement();
+    expect(
+      screen.getByText(/only student accounts can enroll/i),
+    ).toBeInTheDocument();
   });
 
   it('submits the enroll mutation with the course id for a student', async () => {
@@ -64,7 +64,7 @@ describe('EnrollButton', () => {
     const user = userEvent.setup();
     render(<EnrollButton courseId="course_1" />, { wrapper: MemoryRouter });
 
-    await user.click(screen.getByRole('button', { name: /^enroll$/i }));
+    await user.click(screen.getByRole('button', { name: /enroll now/i }));
 
     expect(mutate).toHaveBeenCalledWith('course_1');
   });
