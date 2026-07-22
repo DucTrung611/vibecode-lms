@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import configuration, { configValidationSchema } from './config/configuration';
 import { CoreModule } from './core/core.module';
 import { AiChatbotModule } from './features/ai-chatbot/ai-chatbot.module';
+import { AnalyticsModule } from './features/analytics/analytics.module';
 import { AssignmentsModule } from './features/assignments/assignments.module';
 import { CertificatesModule } from './features/certificates/certificates.module';
 import { CoursesModule } from './features/courses/courses.module';
@@ -42,6 +43,7 @@ import { UploadsModule } from './features/uploads/uploads.module';
     AiChatbotModule,
     UploadsModule,
     DiscussionsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -47,13 +47,22 @@ export function Header() {
         </>
       ) : null}
       {user?.role === 'INSTRUCTOR' ? (
-        <NavLink
-          to="/instructor/courses/new"
-          className={navLinkClass}
-          onClick={() => setMobileOpen(false)}
-        >
-          New course
-        </NavLink>
+        <>
+          <NavLink
+            to="/instructor/courses/new"
+            className={navLinkClass}
+            onClick={() => setMobileOpen(false)}
+          >
+            New course
+          </NavLink>
+          <NavLink
+            to="/instructor/analytics"
+            className={navLinkClass}
+            onClick={() => setMobileOpen(false)}
+          >
+            Analytics
+          </NavLink>
+        </>
       ) : null}
     </>
   );

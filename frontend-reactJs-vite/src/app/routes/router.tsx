@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from '@/app/layout/RootLayout';
 import { HomePage } from '@/app/pages/HomePage';
 import { chatRoutes } from '@/features/ai-chatbot';
+import { analyticsRoutes } from '@/features/analytics';
 import { assignmentRoutes } from '@/features/assignments';
 import { certificateRoutes } from '@/features/certificates';
 import { coursesRoutes } from '@/features/courses';
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       ...paymentRoutes,
       ...learningPathRoutes,
       ...chatRoutes,
+      ...analyticsRoutes,
     ],
   },
 ]);

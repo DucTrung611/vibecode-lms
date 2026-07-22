@@ -182,6 +182,12 @@ Both shapes are produced globally by `ResponseInterceptor` / `HttpExceptionFilte
 | POST | `/lessons/:id/questions` | Ask a question on a lesson | Enrolled student |
 | POST | `/questions/:id/answers` | Answer a question | Enrolled student or owning instructor |
 
+### Instructor Analytics
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| GET | `/instructor/analytics/overview` | Aggregated totals + per-course summary across all courses the instructor owns | Instructor |
+| GET | `/instructor/courses/:id/analytics` | Full analytics detail for one owned course | Instructor (owner) |
+
 ### AI Chatbot (RAG)
 | Method | Path | Description | Auth |
 |---|---|---|---|
@@ -274,6 +280,34 @@ Internally: user message persisted → relevant `document_chunks` retrieved (vec
 }
 ```
 **Error cases**: `404 COURSE_007` if the lesson doesn't exist; `403 AUTH_003` if the caller is neither enrolled nor the owning instructor.
+
+### `GET /instructor/analytics/overview`
+**Response** `200`
+```json
+{
+  "success": true,
+  "data": {
+    "totals": {
+      "totalCourses": 2,
+      "totalStudents": 15,
+      "totalRevenue": 400,
+      "averageRating": 4.6
+    },
+    "courses": [
+      {
+        "id": "course_1",
+        "title": "Intro to Algebra",
+        "enrolledCount": 10,
+        "completionRate": 0.4,
+        "revenue": 300,
+        "averageRating": 5,
+        "reviewCount": 4
+      }
+    ]
+  }
+}
+```
+`averageRating` at both the course and totals level is `null` when there are no reviews yet; `completionRate` is `0` (not `null`) when there are no enrollments.
 
 ### `POST /courses/:id/enroll`
 **Response** `201`
