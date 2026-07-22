@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMyEnrollments, useUpdateProgress } from '@/features/enrollment';
+import { LessonQuestionsSection } from '@/features/discussions';
 import { Skeleton } from '@/shared/components/Skeleton';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { LessonContentViewer } from '../components/LessonContentViewer';
@@ -105,6 +106,8 @@ export default function LessonPage() {
       ) : null}
 
       <LessonContentViewer lesson={lesson} />
+
+      <LessonQuestionsSection lessonId={lesson.id} />
 
       <LessonNav
         courseId={course.id}

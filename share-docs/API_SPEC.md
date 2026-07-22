@@ -93,6 +93,7 @@ Both shapes are produced globally by `ResponseInterceptor` / `HttpExceptionFilte
 | `LEARNING_PATH_004` | 422 | No published courses available to build a learning path from |
 | `REVIEW_001` | 409 | Already reviewed this course |
 | `NOTIFICATION_001` | 404 | Notification not found |
+| `DISCUSSION_001` | 404 | Question not found (answering a missing question id) |
 | `CHAT_001` | 404 | Chat session not found |
 | `CHAT_002` | 429 | Rate limit on AI calls exceeded — reserved in this table; not yet enforced by `ai-chatbot` (see its `context.md`) |
 | `PAYMENT_001` | 402 | Payment required for this course |
@@ -174,6 +175,13 @@ Both shapes are produced globally by `ResponseInterceptor` / `HttpExceptionFilte
 | GET | `/notifications` | My notifications (paginated) | Required |
 | PATCH | `/notifications/:id/read` | Mark as read | Required |
 
+### Discussions (Lesson Q&A)
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| GET | `/lessons/:id/questions` | List questions for a lesson, with nested answers (paginated) | Enrolled student or owning instructor |
+| POST | `/lessons/:id/questions` | Ask a question on a lesson | Enrolled student |
+| POST | `/questions/:id/answers` | Answer a question | Enrolled student or owning instructor |
+
 ### AI Chatbot (RAG)
 | Method | Path | Description | Auth |
 |---|---|---|---|
@@ -236,6 +244,36 @@ Both shapes are produced globally by `ResponseInterceptor` / `HttpExceptionFilte
 ```
 Internally: user message persisted → relevant `document_chunks` retrieved (vector similarity, see `DATABASE.md` §RAG note) → passed to LLM → assistant message persisted.
 **Error cases**: `404 CHAT_001` session not found; `429 CHAT_002` rate limit on AI calls exceeded.
+
+### `GET /lessons/:id/questions`
+**Response** `200`
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "lq_1",
+      "lessonId": "lesson_1",
+      "studentId": "student_1",
+      "content": "Why does this example use recursion instead of a loop?",
+      "createdAt": "2026-07-20T10:00:00.000Z",
+      "student": { "id": "student_1", "fullName": "Jane Doe" },
+      "answers": [
+        {
+          "id": "la_1",
+          "questionId": "lq_1",
+          "authorId": "instr_1",
+          "content": "Recursion mirrors the problem's self-similar structure more directly here.",
+          "createdAt": "2026-07-20T11:00:00.000Z",
+          "author": { "id": "instr_1", "fullName": "Prof X", "role": "INSTRUCTOR" }
+        }
+      ]
+    }
+  ],
+  "meta": { "page": 1, "limit": 20, "total": 1 }
+}
+```
+**Error cases**: `404 COURSE_007` if the lesson doesn't exist; `403 AUTH_003` if the caller is neither enrolled nor the owning instructor.
 
 ### `POST /courses/:id/enroll`
 **Response** `201`

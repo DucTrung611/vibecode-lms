@@ -10,6 +10,7 @@
 - **Learning Paths**: LearningPath, LearningPathItem, LearningPathEnrollment
 - **Reviews**: Review
 - **Notifications**: Notification
+- **Lesson Q&A**: LessonQuestion, LessonAnswer
 - **AI Chatbot (RAG)**: ChatSession, ChatMessage, DocumentChunk
 - **Payments**: Order, OrderItem
 
@@ -90,6 +91,15 @@
 |---|---|---|
 | `notifications` | id (PK), user_id (FK→users), type, title, content (text), is_read (bool), created_at | idx(user_id) |
 
+### Feature: Lesson Q&A
+
+| Table | Fields | Indexes |
+|---|---|---|
+| `lesson_questions` | id (PK), lesson_id (FK→lessons), student_id (FK→users), content (text), created_at | idx(lesson_id) |
+| `lesson_answers` | id (PK), question_id (FK→lesson_questions), author_id (FK→users), content (text), created_at | idx(question_id) |
+
+> **Note**: an answer's "is this from the instructor?" badge is derived at read time from `author.role`, not stored — no `is_instructor_answer` column.
+
 ### Feature: AI Chatbot (RAG)
 
 | Table | Fields | Indexes |
@@ -133,6 +143,8 @@ erDiagram
   ChatSession ||--o{ ChatMessage : contains
   User ||--o{ Order : places
   Order ||--o{ OrderItem : contains
+  Lesson ||--o{ LessonQuestion : has
+  LessonQuestion ||--o{ LessonAnswer : has
 ```
 
 - **Convention**: FK column named `<singular_entity>_id`; every FK is indexed.

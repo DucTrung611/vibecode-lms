@@ -97,6 +97,8 @@ model User {
   notifications           Notification[]
   chatSessions            ChatSession[]
   orders                  Order[]
+  lessonQuestions         LessonQuestion[]
+  lessonAnswers           LessonAnswer[]
 
   @@map("users")
 }
@@ -190,6 +192,7 @@ model Lesson {
   quizzes        Quiz[]
   assignments    Assignment[]
   documentChunks DocumentChunk[]
+  questions      LessonQuestion[]
 
   @@index([moduleId])
   @@map("lessons")
@@ -438,6 +441,37 @@ model Review {
   @@unique([studentId, courseId])
   @@index([courseId])
   @@map("reviews")
+}
+
+// ---------- Lesson Q&A ----------
+
+model LessonQuestion {
+  id        String   @id @default(cuid())
+  lessonId  String   @map("lesson_id")
+  studentId String   @map("student_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  lesson  Lesson         @relation(fields: [lessonId], references: [id])
+  student User           @relation(fields: [studentId], references: [id])
+  answers LessonAnswer[]
+
+  @@index([lessonId])
+  @@map("lesson_questions")
+}
+
+model LessonAnswer {
+  id         String   @id @default(cuid())
+  questionId String   @map("question_id")
+  authorId   String   @map("author_id")
+  content    String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  question LessonQuestion @relation(fields: [questionId], references: [id])
+  author   User           @relation(fields: [authorId], references: [id])
+
+  @@index([questionId])
+  @@map("lesson_answers")
 }
 
 // ---------- Notifications ----------

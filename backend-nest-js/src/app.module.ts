@@ -9,6 +9,7 @@ import { AiChatbotModule } from './features/ai-chatbot/ai-chatbot.module';
 import { AssignmentsModule } from './features/assignments/assignments.module';
 import { CertificatesModule } from './features/certificates/certificates.module';
 import { CoursesModule } from './features/courses/courses.module';
+import { DiscussionsModule } from './features/discussions/discussions.module';
 import { EnrollmentModule } from './features/enrollment/enrollment.module';
 import { IdentityModule } from './features/identity/identity.module';
 import { LearningPathsModule } from './features/learning-paths/learning-paths.module';
@@ -40,6 +41,7 @@ import { UploadsModule } from './features/uploads/uploads.module';
     LearningPathsModule,
     AiChatbotModule,
     UploadsModule,
+    DiscussionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
