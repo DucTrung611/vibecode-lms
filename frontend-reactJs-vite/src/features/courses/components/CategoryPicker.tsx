@@ -26,7 +26,7 @@ export function CategoryPicker({ register, setValue }: CategoryPickerProps) {
           htmlFor="categoryId"
           className="block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
-          Category
+          Category <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
         </label>
         <button
           type="button"

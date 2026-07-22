@@ -14,7 +14,10 @@ export function AddModuleForm({ isPending, onSubmit }: AddModuleFormProps) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<ModuleFormValues>({ resolver: zodResolver(moduleFormSchema) });
+  } = useForm<ModuleFormValues>({
+    resolver: zodResolver(moduleFormSchema),
+    defaultValues: { title: '' },
+  });
 
   return (
     <form
